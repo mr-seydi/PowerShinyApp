@@ -9,11 +9,12 @@
 
 
 
-source("basic_functions.R")
+
+source("data_functions.R")
 library(ggplot2)
 
 cont_size <- 101 #continuum_size (must match the dimension of baseline data)
-base_data <- vgrf_mean_data(type = "mean")
+base_data <- vGRF_data_Robinson(type = "mean")
 
 function(input, output, session) {
   
@@ -146,7 +147,7 @@ function(input, output, session) {
     
     # Create a long format data frame for ggplot
     plot_data <- data.frame(
-      x_values = rep(1:cont_size, ncol(data_with_pulse) * 2),  # Repeat index for each column and dataset
+      x_values = rep(0:(cont_size-1), ncol(data_with_pulse) * 2),  # Repeat index for each column and dataset
       y_values = c(as.vector(data_with_pulse), as.vector(data_without_pulse)),  # Flatten both datasets
       label = factor(rep(c("With Pulse", "Without Pulse"), each = cont_size * ncol(data_with_pulse)), levels = c("With Pulse", "Without Pulse")),  # Labels
       line_group = factor(rep(1:ncol(data_with_pulse), each = cont_size, times = 2))  # Line group for each column
@@ -154,7 +155,7 @@ function(input, output, session) {
     
     # Create a separate data frame for the mean lines
     mean_data <- data.frame(
-      x_values = rep(1:cont_size, 2),
+      x_values = rep(0:(cont_size-1), 2),
       y_values = c(mean_with_pulse, mean_without_pulse),
       label = factor(c(rep("With Pulse", cont_size), rep("Without Pulse", cont_size)), levels = c("With Pulse", "Without Pulse"))
     )
