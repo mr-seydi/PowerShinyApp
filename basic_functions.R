@@ -16,19 +16,23 @@ numpy <- reticulate::import("numpy")
 power1d <- reticulate::import("power1d")
 
 scipy.ndimage <- reticulate::import("scipy.ndimage")
-################Data#########################
-vgrf_mean_data <- function(type="mean"){
-  #type= mean or raw
-  grf <- read.delim(path, header=FALSE)
-  if (type=="mean") {
-    data = rowMeans(grf)
-  }else if(type=="raw"){
-    data = grf #column=sample curves, row=continuum_points
-  }else{
-    stop("Invalid type")
+################Data with NA#########################
+completed_data <- function(x, y, defined_domain=c(0,100)) {
+  
+  if (length(defined_domain) != 2) {
+    stop("Domain must have a form like c(starting point,ending point)")
   }
-  return(data)
+  start_domain <- defined_domain[1]
+  end_domain <- defined_domain[2]
+
+  # Perform linear interpolation using approx() function
+  xnew <- seq(start_domain, end_domain, by = 1)  # New x values with steps of 1
+  interpolated <- approx(x, y, xout = xnew)  # Interpolate y values
+  
+  # Return new y values
+  return(interpolated$y)
 }
+
 
 ###################Functions###########################
 
