@@ -11,8 +11,10 @@
 
 source("basic_functions.R")
 library(ggplot2)
+
 cont_size <- 101 #continuum_size (must match the dimension of baseline data)
 base_data <- vgrf_mean_data(type = "mean")
+
 function(input, output, session) {
   
 
