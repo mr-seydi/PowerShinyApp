@@ -16,6 +16,7 @@ numpy <- reticulate::import("numpy")
 power1d <- reticulate::import("power1d")
 
 scipy.ndimage <- reticulate::import("scipy.ndimage")
+
 ################Data with NA#########################
 completed_data <- function(x, y, defined_domain=c(0,100)) {
   
@@ -27,7 +28,7 @@ completed_data <- function(x, y, defined_domain=c(0,100)) {
 
   # Perform linear interpolation using approx() function
   xnew <- seq(start_domain, end_domain, by = 1)  # New x values with steps of 1
-  interpolated <- approx(x, y, xout = xnew)  # Interpolate y values
+  interpolated <- approx(na.omit(x), na.omit(y), xout = xnew)  # Interpolate y values
   
   # Return new y values
   return(interpolated$y)
