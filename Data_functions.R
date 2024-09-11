@@ -21,7 +21,7 @@ vGRF_data_Robinson <- function(type="mean"){
   }else if(type=="raw"){
     data_out = data #column=sample curves, row=continuum_points
   }else{
-    print("Invalid type")
+        print("Invalid type");     return(NULL)  # Handle invalid type
   }
   return(data_out)
 }
@@ -59,7 +59,7 @@ vGRF_data_Phan<- function(type){
     data_out <- cbind(quiet=quiet, normal=normal)
     
   }else{
-    print("Invalid type")
+        print("Invalid type");     return(NULL)  # Handle invalid type
   }
   return(data_out)
 }
@@ -99,7 +99,7 @@ JCF_data <- function(type){
     data_out <- cbind(lateral_wedge=lateral_wedge, no_wedge=no_wedge)
     
   }else{
-    print("Invalid type")
+        print("Invalid type");     return(NULL)  # Handle invalid type
   }
   return(data_out)
 }
@@ -138,7 +138,7 @@ Angle_data <- function(type){
     data_out <- cbind(individual1=individual1, individual2=individual2)
     
   }else{
-    print("Invalid type")
+        print("Invalid type");     return(NULL)  # Handle invalid type
   }
   return(data_out)
 }
@@ -174,7 +174,7 @@ Moment_data <- function(type){
     colnames(data_out) <- c("DK","IK")
     
   }else{
-    print("Invalid type")
+        print("Invalid type");     return(NULL)  # Handle invalid type
   }
   return(data_out)
 }
@@ -214,7 +214,7 @@ MF_data <- function(type){
     data_out <- cbind(control=control, diabetic=diabetic)
     
   }else{
-    print("Invalid type")
+        print("Invalid type");     return(NULL)  # Handle invalid type
   }
   return(data_out)
 }
@@ -245,7 +245,7 @@ EMG_data <- function(type){
     colnames(data_out) <- c("adult","young")
     
   }else{
-    print("Invalid type")
+        print("Invalid type");     return(NULL)  # Handle invalid type
   }
   return(data_out)
 }
