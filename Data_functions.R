@@ -11,6 +11,9 @@ source("basic_functions.R")
 
 # 13 trials vertical Ground reaction force
 vGRF_data_Robinson <- function(type="mean"){
+  if (is.null(type)) {
+    return(NULL)  # Return NULL or an empty dataset
+  }
   #type= mean or raw
   data <- read.delim("data/Robinson2021_vGRF.txt", header=FALSE)
   if (type=="mean") {
@@ -18,7 +21,7 @@ vGRF_data_Robinson <- function(type="mean"){
   }else if(type=="raw"){
     data_out = data #column=sample curves, row=continuum_points
   }else{
-    stop("Invalid type")
+    print("Invalid type")
   }
   return(data_out)
 }
@@ -31,7 +34,9 @@ vGRF_data_Robinson <- function(type="mean"){
 # Time and body weight normalised vertical ground reaction force
 #during the stance phase of running under normal and quiet sound conditions.
 vGRF_data_Phan<- function(type){
-  #type= mean or raw
+  if (is.null(type)) {
+    return(NULL)  # Return NULL or an empty dataset
+  }
   data <- read.delim("data/Phan2017_vGRF.txt", header=FALSE)
   Domain <- c(0,100)
   
@@ -54,7 +59,7 @@ vGRF_data_Phan<- function(type){
     data_out <- cbind(quiet=quiet, normal=normal)
     
   }else{
-    stop("Invalid type")
+    print("Invalid type")
   }
   return(data_out)
 }
@@ -70,10 +75,11 @@ vGRF_data_Phan<- function(type){
 #no_wedge conditin
 
 JCF_data <- function(type){
-  
+  if (is.null(type)) {
+    return(NULL)  # Return NULL or an empty dataset
+  }
   data <- read.delim("data/Barrios2017_JCF.txt", header=FALSE)
   Domain <- c(0,100)
-
   if (type=="lateral_wedge") {
     lateral_wedge <- completed_data(x = data[,1], y = data[,2],
                                     defined_domain = Domain)
@@ -93,7 +99,7 @@ JCF_data <- function(type){
     data_out <- cbind(lateral_wedge=lateral_wedge, no_wedge=no_wedge)
     
   }else{
-    stop("Invalid type")
+    print("Invalid type")
   }
   return(data_out)
 }
@@ -107,7 +113,9 @@ JCF_data <- function(type){
 #using linear scaling
 
 Angle_data <- function(type){
-  
+  if (is.null(type)) {
+    return(NULL)  # Return NULL or an empty dataset
+  }
   data <- read.delim("data/Bakke2020_Angle.txt", header=FALSE)
   Domain <- c(0,100)
   
@@ -130,7 +138,7 @@ Angle_data <- function(type){
     data_out <- cbind(individual1=individual1, individual2=individual2)
     
   }else{
-    stop("Invalid type")
+    print("Invalid type")
   }
   return(data_out)
 }
@@ -146,7 +154,9 @@ Angle_data <- function(type){
 #and IK (inverse kinematic)
 
 Moment_data <- function(type){
-  
+  if (is.null(type)) {
+    return(NULL)  # Return NULL or an empty dataset
+  }
   data <- read.delim("data/Robinson2014_Moment.txt", header=FALSE)
   
   
@@ -164,7 +174,7 @@ Moment_data <- function(type){
     colnames(data_out) <- c("DK","IK")
     
   }else{
-    stop("Invalid type")
+    print("Invalid type")
   }
   return(data_out)
 }
@@ -179,7 +189,9 @@ Moment_data <- function(type){
 #The force time series for ankle extensor muscle (Soleus) for control and diabetic
 
 MF_data <- function(type){
-  
+  if (is.null(type)) {
+    return(NULL)  # Return NULL or an empty dataset
+  }
   data <- read.delim("data/Gomes2017_MF.txt", header=FALSE)
   Domain <- c(0,100)
   
@@ -202,7 +214,7 @@ MF_data <- function(type){
     data_out <- cbind(control=control, diabetic=diabetic)
     
   }else{
-    stop("Invalid type")
+    print("Invalid type")
   }
   return(data_out)
 }
@@ -212,8 +224,10 @@ MF_data <- function(type){
 
 
 #Normalised Electromyography (EMG) For young and adult group (probably Soleus)
-MF_data <- function(type){
-  
+EMG_data <- function(type){
+  if (is.null(type)) {
+    return(NULL)  # Return NULL or an empty dataset
+  }
   data <- read.delim("data/Bovi2011_EMG.txt", header=FALSE)
   
   
@@ -231,7 +245,7 @@ MF_data <- function(type){
     colnames(data_out) <- c("adult","young")
     
   }else{
-    stop("Invalid type")
+    print("Invalid type")
   }
   return(data_out)
 }

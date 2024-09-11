@@ -10,15 +10,66 @@
 
 
 
-source("data_functions.R")
+source("Data_functions.R")
 library(ggplot2)
 
 cont_size <- 101 #continuum_size (must match the dimension of baseline data)
-base_data <- vGRF_data_Robinson(type = "mean")
+#base_data <- vGRF_data_Robinson(type = "mean")
 
 function(input, output, session) {
   
+  # Reactive value to store the selected type input
+  type_input_value <- reactiveVal(NULL)
+  
+  # Reactive expression to load the appropriate data based on user input
+  selected_data <- reactive({
+    req(input$dataset)  # Ensure dataset input is available before proceeding
+    
+    # Debugging lines
+    print(paste("Selected dataset:", input$dataset))
+    print(paste("Selected type:", type_input_value()))
+    
+    # Switch based on dataset selected
+    switch(input$dataset,
+           "vGRF_Robinson" = vGRF_data_Robinson(type = type_input_value()),
+           "vGRF_Phan" = vGRF_data_Phan(type = type_input_value()),
+           "JCF" = {
+             print(paste("Calling JCF_data with type:", type_input_value()))  # Debugging line
+             JCF_data(type = type_input_value())
+           },
+           "Hip_Angle" = Angle_data(type = type_input_value()),
+           "Moment" = Moment_data(type = type_input_value()),
+           "MF" = MF_data(type = type_input_value()),
+           "EMG" = EMG_data(type = type_input_value())
+    )
+  })
+  
+  # Create a reactive UI for the 'type' selection based on dataset choice
+  output$type_selector <- renderUI({
+    switch(input$dataset,
+           "vGRF_Robinson" = selectInput("type_input", "Choose type:", choices = c("mean")),
+           "vGRF_Phan" = selectInput("type_input", "Choose type:", choices = c("quiet", "normal")),
+           "JCF" = selectInput("type_input", "Choose type:", choices = c("lateral_wedge", "no_wedge")),
+           "Hip_Angle" = selectInput("type_input", "Choose type:", choices = c("individual1", "individual2")),
+           "Moment" = selectInput("type_input", "Choose type:", choices = c("DK", "IK")),
+           "MF" = selectInput("type_input", "Choose type:", choices = c("control", "diabetic")),
+           "EMG" = selectInput("type_input", "Choose type:", choices = c("adult", "young"))
+    )
+  })
+  
+  # Observe changes in dataset input and reset type_input
+  observeEvent(input$dataset, {
+    # Reset the type_input_value when dataset changes
+    type_input_value(NULL)
+  })
+  
+  # Update the reactive value whenever the type_input changes
+  observeEvent(input$type_input, {
+    type_input_value(input$type_input)
+  })
+  
 
+  
   
   
   # Helper function for numeric input validation
@@ -100,9 +151,30 @@ function(input, output, session) {
     gaussian_pulse(center = input$center, fwhm = input$fwhm_pulse, continuum_size = cont_size)
   })
   
+  
+  
+  
+  # Reactive expression for computing the half-max value of selected data
+  default_amplitude <- reactive({
+    
+    req(selected_data())  # Ensure selected_data() is available
+    
+    half_max <- max(selected_data()) / 2  # Compute the half-max value
+    
+    return(round(half_max,digits = 1))
+  })
+  
+  # Observe changes to set the default value of amplitude input
+  observe({
+    req(default_amplitude())  # Ensure default_amplitude() is available
+    
+    updateNumericInput(session, "amplitude", value = default_amplitude())
+  })
+  
+  
   # Reactive expression for scaling the pulse
   scaled_pulse <- reactive({
-    req(input$amplitude)
+    req(input$amplitude, data_pulse())
     amplitude_pulse(data = data_pulse()$density_val, amp = input$amplitude)
   })
   
@@ -110,11 +182,12 @@ function(input, output, session) {
   
   output$pulse_plot <- renderPlot({
     
+    req(scaled_pulse(), data_pulse())  # Ensure both are available
     
     # Create a data frame with all necessary values, including a 'Legend' variable
     plot_data <- data.frame(
       x_values = rep(data_pulse()$x_values, 3),  # Repeat x_values for 3 lines
-      y_values = c(scaled_pulse(), base_data, base_data + scaled_pulse()),  # Combine all y-values
+      y_values = c(scaled_pulse(), selected_data(), selected_data() + scaled_pulse()),  # Combine all y-values
       legend = factor(rep(c("Pulse", "Baseline data", "Baseline data + Pulse"), 
                           each = length(data_pulse()$x_values)),
                       levels = c("Pulse", "Baseline data", "Baseline data + Pulse"))  # Control factor levels
@@ -136,8 +209,8 @@ function(input, output, session) {
   # Render the data plot with generated sample data
   output$data_plot <- renderPlot({
     # Generate data with and without pulse
-    data_with_pulse <- data_generator(data = base_data, signal = scaled_pulse(), noise = smoothed_data())
-    data_without_pulse <- data_generator(data = base_data, noise = smoothed_data())
+    data_with_pulse <- data_generator(data = selected_data(), signal = scaled_pulse(), noise = smoothed_data())
+    data_without_pulse <- data_generator(data = selected_data(), noise = smoothed_data())
     
     # Prepare data for ggplot (assuming both datasets have the same number of rows/columns)
     
@@ -184,7 +257,7 @@ function(input, output, session) {
         Method = input$test_type,
         Sample_size = input$sample_size,
         Iter_number = 100,
-        Baseline_data = vgrf_mean_data(type = "mean"),
+        Baseline_data = selected_data(),
         Signal = scaled_pulse(),
         Conti_size = cont_size,
         Noise_mu = input$mu,
