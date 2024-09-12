@@ -14,51 +14,88 @@ source("Data_functions.R")
 library(ggplot2)
 
 cont_size <- 101 #continuum_size (must match the dimension of baseline data)
-#base_data <- vGRF_data_Robinson(type = "mean")
+
 
 function(input, output, session) {
   
-  # Reactive value to store the selected type input
+  # Reactive value to store the selected type input for baseline type
   type_input_value <- reactiveVal(NULL)
   
-  # Reactive expression to load the appropriate data based on user input
   selected_data <- reactive({
-    req(input$dataset)  # Ensure dataset input is available before proceeding
     
-    # Debugging lines
-    print(paste("Selected dataset:", input$dataset))
-    print(paste("Selected type:", type_input_value()))
+    req(input$data_selection_type)  # Ensure data_selection_type is available before proceeding
     
-    # Switch based on dataset selected
-    switch(input$dataset,
-           "vGRF_Robinson" = vGRF_data_Robinson(type = type_input_value()),
-           "vGRF_Phan" = vGRF_data_Phan(type = type_input_value()),
-           "JCF" = {
-             print(paste("Calling JCF_data with type:", type_input_value()))  # Debugging line
-             JCF_data(type = type_input_value())
-           },
-           "Hip_Angle" = Angle_data(type = type_input_value()),
-           "Moment" = Moment_data(type = type_input_value()),
-           "MF" = MF_data(type = type_input_value()),
-           "EMG" = EMG_data(type = type_input_value())
-    )
+    ####Data selection####
+    
+    # If 'baseline' is selected, use baseline datasets
+    if (input$data_selection_type == "two_sample") {
+      ######------Data selection, two sample data------####
+      # Reactive expression to handle two-sample data selection
+      req(input$dataset_two_sample)  # Ensure dataset input is available before proceeding
+      
+      switch(input$dataset_two_sample,
+             "vGRF_both" = vGRF_data_Phan(type = "both"),
+             "JCF_both" = JCF_data(type = "both"),
+             "Hip_Angle_both" = Angle_data(type = "both"),
+             "Moment_both" = Moment_data(type = "both"),
+             "MF_both" = MF_data(type = "both"),
+             "EMG_both" = EMG_data(type = "both")
+      )
+
+  
+    } else {
+      
+      ######------Data selection, baseline data------####
+      req(input$dataset_baseline)  # Ensure dataset input is available before proceeding
+      
+      # Debugging lines
+      print(paste("Selected dataset:", input$dataset_baseline))
+      print(paste("Selected type:", type_input_value()))
+      
+      # Switch based on dataset selected
+      switch(input$dataset_baseline,
+             "vGRF_Robinson" = vGRF_data_Robinson(type = type_input_value()),
+             "vGRF_Phan" = vGRF_data_Phan(type = type_input_value()),
+             "JCF" = {
+               print(paste("Calling JCF_data with type:", type_input_value()))  # Debugging line
+               JCF_data(type = type_input_value())
+             },
+             "Hip_Angle" = Angle_data(type = type_input_value()),
+             "Moment" = Moment_data(type = type_input_value()),
+             "MF" = MF_data(type = type_input_value()),
+             "EMG" = EMG_data(type = type_input_value())
+      )
+      
+    }
+    
   })
   
+
+  
+
   # Create a reactive UI for the 'type' selection based on dataset choice
   output$type_selector <- renderUI({
-    switch(input$dataset,
-           "vGRF_Robinson" = selectInput("type_input", "Choose type:", choices = c("mean")),
-           "vGRF_Phan" = selectInput("type_input", "Choose type:", choices = c("quiet", "normal")),
-           "JCF" = selectInput("type_input", "Choose type:", choices = c("lateral_wedge", "no_wedge")),
-           "Hip_Angle" = selectInput("type_input", "Choose type:", choices = c("individual1", "individual2")),
-           "Moment" = selectInput("type_input", "Choose type:", choices = c("DK", "IK")),
-           "MF" = selectInput("type_input", "Choose type:", choices = c("control", "diabetic")),
-           "EMG" = selectInput("type_input", "Choose type:", choices = c("adult", "young"))
+    switch(input$dataset_baseline,
+           "vGRF_Robinson" = selectInput("type_input", "Choose type:",
+                                         choices = c("mean")),
+           "vGRF_Phan" = selectInput("type_input", "Choose type:",
+                                     choices = c("quiet", "normal")),
+           "JCF" = selectInput("type_input", "Choose type:",
+                               choices = c("lateral_wedge", "no_wedge")),
+           "Hip_Angle" = selectInput("type_input", "Choose type:",
+                                     choices = c("individual1", "individual2")),
+           "Moment" = selectInput("type_input", "Choose type:",
+                                  choices = c("DK", "IK")),
+           "MF" = selectInput("type_input", "Choose type:",
+                              choices = c("control", "diabetic")),
+           "EMG" = selectInput("type_input", "Choose type:",
+                               choices = c("adult", "young"))
     )
   })
   
+  
   # Observe changes in dataset input and reset type_input
-  observeEvent(input$dataset, {
+  observeEvent(input$dataset_baseline, {
     # Reset the type_input_value when dataset changes
     type_input_value(NULL)
   })
@@ -67,9 +104,10 @@ function(input, output, session) {
   observeEvent(input$type_input, {
     type_input_value(input$type_input)
   })
+    
+  
   
 
-  
   
   
   # Helper function for numeric input validation
@@ -145,8 +183,11 @@ function(input, output, session) {
     
   })
   
+  
+  
   # Reactive expression for generating Gaussian pulse data
   data_pulse <- reactive({
+    req(input$data_selection_type == "baseline")  # Ensure "baseline" is selected
     req(input$center, input$fwhm_pulse)
     gaussian_pulse(center = input$center, fwhm = input$fwhm_pulse, continuum_size = cont_size)
   })
@@ -157,15 +198,21 @@ function(input, output, session) {
   # Reactive expression for computing the half-max value of selected data
   default_amplitude <- reactive({
     
+    req(input$data_selection_type == "baseline")  # Ensure "baseline" is selected
     req(selected_data())  # Ensure selected_data() is available
     
-    half_max <- max(selected_data()) / 2  # Compute the half-max value
+    # Compute the half-max value
+    half_max <- ( selected_data()[which.max(abs(selected_data()))] ) / 2 
+    # To return the half-max value  with its original sign
     
-    return(round(half_max,digits = 1))
+    return(round( half_max,digits = 1))
+    
   })
   
   # Observe changes to set the default value of amplitude input
   observe({
+    
+    req(input$data_selection_type == "baseline")  # Ensure "baseline" is selected
     req(default_amplitude())  # Ensure default_amplitude() is available
     
     updateNumericInput(session, "amplitude", value = default_amplitude())
@@ -174,34 +221,64 @@ function(input, output, session) {
   
   # Reactive expression for scaling the pulse
   scaled_pulse <- reactive({
+    req(input$data_selection_type == "baseline")  # Ensure "baseline" is selected
     req(input$amplitude, data_pulse())
     amplitude_pulse(data = data_pulse()$density_val, amp = input$amplitude)
   })
   
-
+  
+  
+  
   
   output$pulse_plot <- renderPlot({
     
-    req(scaled_pulse(), data_pulse())  # Ensure both are available
+    
     
     # Create a data frame with all necessary values, including a 'Legend' variable
-    plot_data <- data.frame(
-      x_values = rep(data_pulse()$x_values, 3),  # Repeat x_values for 3 lines
-      y_values = c(scaled_pulse(), selected_data(), selected_data() + scaled_pulse()),  # Combine all y-values
-      legend = factor(rep(c("Pulse", "Baseline data", "Baseline data + Pulse"), 
-                          each = length(data_pulse()$x_values)),
-                      levels = c("Pulse", "Baseline data", "Baseline data + Pulse"))  # Control factor levels
-    )
+    
+    if (input$data_selection_type == "baseline") {
+      
+      req(scaled_pulse(), data_pulse())  # Ensure both are available
+      
+      plot_data <- data.frame(
+        x_values = rep(data_pulse()$x_values, 3),  # Repeat x_values for 3 lines
+        y_values = c(scaled_pulse(), selected_data(), selected_data() +
+                       scaled_pulse()),  # Combine all y-values
+        legend = factor(rep(c("Pulse", "Baseline data", "Baseline data + Pulse"), 
+                            each = length(data_pulse()$x_values)),
+                        levels = c("Pulse", "Baseline data",
+                                   "Baseline data + Pulse"))  # Control factor levels
+      )
+    } else {
+      
+      req(selected_data())  # Ensure selected_data is available for two_sample
+      
+      # Create a data frame with the two-sample data
+      plot_data <- data.frame(
+        x_values = rep(0:(cont_size-1), 3),  # Repeat x_values for 3 lines
+        y_values = c(abs(selected_data()[,2]-selected_data()[,1]),
+                     selected_data()[,1], selected_data()[,2]),  # Combine all y-values
+        legend = factor(rep(c("Pulse", colnames(selected_data())[1],
+                              colnames(selected_data())[2]), 
+                            each = dim(selected_data())[1]),
+                        levels = c("Pulse", colnames(selected_data())[1],
+                                   colnames(selected_data())[2]))  # Control factor levels
+      )
+    }
+    
     
     # Create the plot using ggplot
     ggplot(plot_data, aes(x = x_values, y = y_values, color = legend)) +
       geom_line(size = 1.5) +  # Plot lines for each group
-      labs(title = "Gaussian Pulse", x = "Index", y = "Value") +  # Labels
+      labs(title = "Selected Data", x = "Index", y = "Value") +  # Labels
       scale_color_manual(values = c("black", "tomato", "cadetblue")) +  # Line colors
       theme_minimal() +  # Use a minimal theme
       theme(plot.title = element_text(hjust = 0.5)) +  # Center the title
       theme(legend.position = "bottom",legend.title = element_blank())
   })
+  
+  
+  
   
   
   

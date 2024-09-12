@@ -65,8 +65,8 @@ fwhm_to_sigma <- function(fwhm){
 ksmooth_gaussian <- function(x, fwhm) {
   
   SD = fwhm_to_sigma(fwhm)
-  smoothed_vals = ksmooth(x = 1:length(x), y = x, bandwidth = SD, kernel = "normal")$y
-  #smoothed_vals = scipy.ndimage$gaussian_filter1d(x, SD, mode='wrap')$tolist()
+  #smoothed_vals = ksmooth(x = 1:length(x), y = x, bandwidth = SD, kernel = "normal")$y
+  smoothed_vals = scipy.ndimage$gaussian_filter1d(x, SD, mode='wrap')#$tolist()
 }
 
 

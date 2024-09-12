@@ -56,7 +56,8 @@ vGRF_data_Phan<- function(type){
                                     defined_domain = Domain)
     normal <- completed_data(x = data[,3], y = data[,4],
                                defined_domain = Domain)
-    data_out <- cbind(quiet=quiet, normal=normal)
+    data_out <- cbind(quiet, normal)
+    colnames(data_out) <- c("Quiet", "Normal")
     
   }else{
         print("Invalid type");     return(NULL)  # Handle invalid type
@@ -96,7 +97,8 @@ JCF_data <- function(type){
                                     defined_domain = Domain)
     no_wedge <- completed_data(x = data[,3], y = data[,4],
                                defined_domain = Domain)
-    data_out <- cbind(lateral_wedge=lateral_wedge, no_wedge=no_wedge)
+    data_out <- cbind(lateral_wedge, no_wedge=no_wedge)
+    colnames(data_out) <- c("Lateral wedge", "No wedge")
     
   }else{
         print("Invalid type");     return(NULL)  # Handle invalid type
@@ -133,9 +135,10 @@ Angle_data <- function(type){
     
     individual1 <- completed_data(x = data[,1], y = data[,2],
                                     defined_domain = Domain)
-    individual1 <- completed_data(x = data[,3], y = data[,4],
+    individual2 <- completed_data(x = data[,3], y = data[,4],
                                defined_domain = Domain)
-    data_out <- cbind(individual1=individual1, individual2=individual2)
+    data_out <- cbind(individual1, individual2)
+    colnames(data_out) <- c("Individual 1","Individual 2")
     
   }else{
         print("Invalid type");     return(NULL)  # Handle invalid type
@@ -211,8 +214,8 @@ MF_data <- function(type){
                                   defined_domain = Domain)
     diabetic <- completed_data(x = data[,3], y = data[,4],
                                   defined_domain = Domain)
-    data_out <- cbind(control=control, diabetic=diabetic)
-    
+    data_out <- cbind(control, diabetic)
+    colnames(data_out) <- c("Control","Diabetic")
   }else{
         print("Invalid type");     return(NULL)  # Handle invalid type
   }
@@ -242,7 +245,7 @@ EMG_data <- function(type){
   }else if(type=="both"){
     
     data_out <- data
-    colnames(data_out) <- c("adult","young")
+    colnames(data_out) <- c("Adult","Young")
     
   }else{
         print("Invalid type");     return(NULL)  # Handle invalid type

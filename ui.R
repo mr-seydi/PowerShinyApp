@@ -24,26 +24,58 @@ library(shiny)
 
 # Define UI for application
 ui <- fluidPage(
-  titlePanel("Shiny App with Plots Tab"),
+  titlePanel("Power ShinyApp"),
+  
+  
   
   # Create a tabset panel to organize different sections
   tabsetPanel(
-    tabPanel("Dataset Selection",
-             fluidRow(
-               column(4,
-                      selectInput("dataset", "Choose a dataset:",
-                                  choices = c("vGRF Robinson" = "vGRF_Robinson",
-                                              "vGRF Phan" = "vGRF_Phan",
-                                              "JCF" = "JCF",
-                                              "Hip Flexion Angle" = "Hip_Angle",
-                                              "Moment" = "Moment",
-                                              "Muscle Force" = "MF",
-                                              "EMG" = "EMG")),
-                      uiOutput("type_selector")
-               )
-             )
-    ),
-    
+  tabPanel("Dataset Selection",
+   # Create a fluid row with radioButtons on the left and dataset selection on the right
+   fluidRow(
+     column(6,
+            # User selects data type (baseline or two-sample)
+            radioButtons("data_selection_type", "Choose the data type:",
+                         choices = c("Baseline Data" = "baseline", 
+                                     "Two-Sample Data" = "two_sample"),
+                         selected = "baseline")
+     ),
+     
+     column(6,
+            # Conditionally show baseline data selection inputs
+            conditionalPanel(
+              condition = "input.data_selection_type == 'baseline'",
+              fluidRow(
+                column(12,
+                   selectInput("dataset_baseline", "Choose a dataset:",
+                               choices = c("vGRF Robinson" = "vGRF_Robinson",
+                                           "vGRF Phan" = "vGRF_Phan",
+                                           "JCF" = "JCF",
+                                           "Hip Flexion Angle" = "Hip_Angle",
+                                           "Moment" = "Moment",
+                                           "Muscle Force" = "MF",
+                                           "EMG" = "EMG")),
+                   uiOutput("type_selector")
+                )
+              )
+            ),
+            
+            # Conditionally show two-sample data selection inputs
+            conditionalPanel(
+              condition = "input.data_selection_type == 'two_sample'",
+              selectInput("dataset_two_sample", "Choose a dataset with two group:",
+                choices = c("vGRF (normal and quiet)" = "vGRF_both",
+                            "JCF (lateral wedge and no wedge)" = "JCF_both",
+                            "Hip Flexion Angle (two individuals)" = "Hip_Angle_both",
+                            "Moment (direct and inverse kinematic)" = "Moment_both",
+                            "Muscle Force (control and diabetic)" = "MF_both",
+                            "EMG (young and adult)" = "EMG_both"))
+            )
+     )
+  )
+),
+  
+  
     tabPanel("Plots",
              fluidRow(
                # First row with parameter boxes
@@ -58,12 +90,15 @@ ui <- fluidPage(
                       )
                ),
                column(6,
-                      wellPanel(
-                        h3("Pulse Parameters"),
-                        numericInput("center", "Center", value = 50, min = 0, max = 100),
-                        numericInput("fwhm_pulse", "Full Width at Half Maximum (FWHM):", min = 1, value = 20),
-                        numericInput("amplitude", "Amplitude", value = 300, min = 0, step = 0.1),
-                        textOutput("error_message_pulse")
+                      conditionalPanel(
+                        condition = "input.data_selection_type == 'baseline'",
+                        wellPanel(
+                          h3("Pulse Parameters"),
+                          numericInput("center", "Center", value = 50, min = 0, max = 100),
+                          numericInput("fwhm_pulse", "Full Width at Half Maximum (FWHM):", min = 1, value = 20),
+                          numericInput("amplitude", "Amplitude", value = 300, step = 0.1),
+                          textOutput("error_message_pulse")
+                        )
                       )
                )
              ),
