@@ -151,9 +151,53 @@ function(input, output, session) {
     noise_guassian_curve(number_of_curves = input$sample_size, continuum_size = cont_size)
   })
   
+  # Reactive expressions
+  data_noise_2 <- reactive({
+    req(input$sample_size)
+    noise_guassian_curve(number_of_curves = input$sample_size, continuum_size = cont_size)
+  })
+  
+  
+  # Reactive expression for computing the half-range value for noise SD 
+  default_sigma <- reactive({
+    if (is.null(selected_data())) {
+      return(0)  # Return a default value if data is empty
+    } else if (input$data_selection_type == "baseline") {
+      # Compute the half-range value
+      half_range <- ( max(selected_data(), na.rm = T)-
+                      min(selected_data(), na.rm = T)) / 2 
+    } else {
+        # Compute the half-range value
+        Max1 <- max(selected_data()[,1], na.rm = T)
+        Max2 <- max(selected_data()[,2], na.rm = T)
+        Min1 <- min(selected_data()[,1], na.rm = T)
+        Min2 <- min(selected_data()[,2], na.rm = T)
+        
+      half_range <- ( max(c(Max1,Max2), na.rm = T)-min(c(Min1,Min2), na.rm = T) ) / 2
+    }
+
+    # To return the half-range
+    
+    return(round( half_range,digits = 1))
+    
+  })
+  
+  # Observe changes to set the default value of noise SD
+  observe({
+    
+    req(default_sigma())  # Ensure default_amplitude() is available
+    
+    updateNumericInput(session, "sigma", value = default_sigma())
+  })
+  
   smoothed_data <- reactive({
     req(input$mu, input$sigma, input$fwhm)
     smoothed_gussian_curves(data = data_noise(), mu = input$mu, sig = input$sigma, fwhm = input$fwhm)
+  })
+  
+  smoothed_data_2 <- reactive({
+    req(input$mu, input$sigma, input$fwhm)
+    smoothed_gussian_curves(data = data_noise_2(), mu = input$mu, sig = input$sigma, fwhm = input$fwhm)
   })
   
   # Output plot rendering
@@ -245,25 +289,32 @@ function(input, output, session) {
         y_values = c(scaled_pulse(), selected_data(), selected_data() +
                        scaled_pulse()),  # Combine all y-values
         legend = factor(rep(c("Pulse", "Baseline data", "Baseline data + Pulse"), 
-                            each = length(data_pulse()$x_values)),
-                        levels = c("Pulse", "Baseline data",
-                                   "Baseline data + Pulse"))  # Control factor levels
+                            each = length(data_pulse()$x_values)))
       )
+      
+      color_values <- c("Pulse" = "black",
+                        "Baseline data" = "cadetblue",
+                        "Baseline data + Pulse" = "tomato")
+      
     } else {
       
       req(selected_data())  # Ensure selected_data is available for two_sample
       
       # Create a data frame with the two-sample data
       plot_data <- data.frame(
-        x_values = rep(0:(cont_size-1), 3),  # Repeat x_values for 3 lines
-        y_values = c(abs(selected_data()[,2]-selected_data()[,1]),
-                     selected_data()[,1], selected_data()[,2]),  # Combine all y-values
-        legend = factor(rep(c("Pulse", colnames(selected_data())[1],
-                              colnames(selected_data())[2]), 
-                            each = dim(selected_data())[1]),
-                        levels = c("Pulse", colnames(selected_data())[1],
-                                   colnames(selected_data())[2]))  # Control factor levels
+        x_values = rep(0:(cont_size - 1), 3),  # Repeat x_values for 3 lines
+        y_values = c(abs(selected_data()[, 2] - selected_data()[, 1]),
+                     selected_data()[, 1], selected_data()[, 2]),  # Combine all y-values
+        legend = factor(rep(c("Pulse", colnames(selected_data())[1], colnames(selected_data())[2]), 
+                            each = dim(selected_data())[1]))  # Control factor levels
       )
+      
+      # Use setNames to create color_values dynamically
+      color_values <- setNames(c("black", "cadetblue", "tomato"),
+                               c("Pulse", 
+                                 colnames(selected_data())[1], 
+                                 colnames(selected_data())[2]))
+      
     }
     
     
@@ -271,7 +322,7 @@ function(input, output, session) {
     ggplot(plot_data, aes(x = x_values, y = y_values, color = legend)) +
       geom_line(size = 1.5) +  # Plot lines for each group
       labs(title = "Selected Data", x = "Index", y = "Value") +  # Labels
-      scale_color_manual(values = c("black", "tomato", "cadetblue")) +  # Line colors
+      scale_color_manual(values = color_values) +  # Line colors
       theme_minimal() +  # Use a minimal theme
       theme(plot.title = element_text(hjust = 0.5)) +  # Center the title
       theme(legend.position = "bottom",legend.title = element_blank())
@@ -283,41 +334,66 @@ function(input, output, session) {
   
   
   
-  # Render the data plot with generated sample data
   output$data_plot <- renderPlot({
-    # Generate data with and without pulse
-    data_with_pulse <- data_generator(data = selected_data(), signal = scaled_pulse(), noise = smoothed_data())
-    data_without_pulse <- data_generator(data = selected_data(), noise = smoothed_data())
     
-    # Prepare data for ggplot (assuming both datasets have the same number of rows/columns)
+    if (input$data_selection_type == "baseline") {
+      # Generate data with and without pulse
+      Sample1 <- data_generator(data = selected_data(), signal = scaled_pulse(), noise = smoothed_data())
+      Sample2 <- data_generator(data = selected_data(), noise = smoothed_data_2())
+      
+      sample_label_1 <- "With Pulse"
+      sample_label_2 <- "Without Pulse"
+      
+      colors_plot_data <- setNames(c("tomato", "cadetblue"),
+                                   c( 
+                                     sample_label_1, 
+                                     sample_label_2))
+      
+    } else {
+      # For two_sample case
+      req(ncol(selected_data()) >= 2)  # Ensure selected_data() has at least 2 columns
+      
+      Sample1 <- data_generator(data = selected_data()[, 1], noise = smoothed_data())
+      Sample2 <- data_generator(data = selected_data()[, 2], noise = smoothed_data_2())
+      
+      # Use the same labels as in pulse_plot
+      sample_label_1 <- colnames(selected_data())[1]
+      sample_label_2 <- colnames(selected_data())[2]
+      
+      colors_plot_data <- setNames(c("tomato", "cadetblue"),
+                                   c(sample_label_2, 
+                                     sample_label_1))
+    }
     
     # Calculate mean for each group
-    mean_with_pulse <- rowMeans(data_with_pulse)
-    mean_without_pulse <- rowMeans(data_without_pulse)
+    sample1_mean <- rowMeans(Sample1)
+    sample2_mean <- rowMeans(Sample2)
     
     # Create a long format data frame for ggplot
     plot_data <- data.frame(
-      x_values = rep(0:(cont_size-1), ncol(data_with_pulse) * 2),  # Repeat index for each column and dataset
-      y_values = c(as.vector(data_with_pulse), as.vector(data_without_pulse)),  # Flatten both datasets
-      label = factor(rep(c("With Pulse", "Without Pulse"), each = cont_size * ncol(data_with_pulse)), levels = c("With Pulse", "Without Pulse")),  # Labels
-      line_group = factor(rep(1:ncol(data_with_pulse), each = cont_size, times = 2))  # Line group for each column
+      x_values = rep(1:nrow(Sample1), ncol(Sample1) * 2),  # Repeat index for each column and dataset
+      y_values = c(as.vector(Sample1), as.vector(Sample2)),  # Flatten both datasets
+      label = factor(rep(c(sample_label_1, sample_label_2),
+                         each = nrow(Sample1) * ncol(Sample1))),  # Labels from selected_data()
+      line_group = factor(rep(1:ncol(Sample1), each = nrow(Sample1), times = 2))  # Line group for each column
     )
     
     # Create a separate data frame for the mean lines
     mean_data <- data.frame(
-      x_values = rep(0:(cont_size-1), 2),
-      y_values = c(mean_with_pulse, mean_without_pulse),
-      label = factor(c(rep("With Pulse", cont_size), rep("Without Pulse", cont_size)), levels = c("With Pulse", "Without Pulse"))
+      x_values = rep(1:nrow(Sample1), 2),
+      y_values = c(sample1_mean, sample2_mean),
+      label = factor(c(rep(sample_label_1, nrow(Sample1)), rep(sample_label_2, nrow(Sample1))), 
+                     levels = c(sample_label_1, sample_label_2))
     )
     
     # Create the plot using ggplot2
     ggplot() +
       # First layer: Individual lines
-      geom_line(data = plot_data, aes(x = x_values, y = y_values, group = interaction(line_group, label), color = label), size = 1, alpha=0.4) +  
+      geom_line(data = plot_data, aes(x = x_values, y = y_values, group = interaction(line_group, label), color = label), size = 1, alpha = 0.4) +
       # Second layer: Mean lines without group aesthetic
-      geom_line(data = mean_data, aes(x = x_values, y = y_values, color = label), size = 2.5) +  
-      scale_color_manual(values = c("cadetblue", "tomato")) +  # Set colors for "With Pulse" and "Without Pulse"
-      labs(title = "One illustration of sample data", x = "Index", y = "Value") +  # Add labels
+      geom_line(data = mean_data, aes(x = x_values, y = y_values, color = label), size = 2.5) +
+      scale_color_manual(values = colors_plot_data) +  # Set colors for both sample labels
+      labs(title = "Generated Sample Data", x = "Index", y = "Value") +  # Add labels
       theme_minimal() +  # Use a minimal theme
       theme(plot.title = element_text(hjust = 0.5)) +  # Center the plot title
       theme(legend.position = "bottom", legend.title = element_blank())  # Move legend to bottom
