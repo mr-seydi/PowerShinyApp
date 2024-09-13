@@ -303,7 +303,7 @@ function(input, output, session) {
       # Create a data frame with the two-sample data
       plot_data <- data.frame(
         x_values = rep(0:(cont_size - 1), 3),  # Repeat x_values for 3 lines
-        y_values = c(abs(selected_data()[, 2] - selected_data()[, 1]),
+        y_values = c((selected_data()[, 1] - selected_data()[, 2]), #first - second column
                      selected_data()[, 1], selected_data()[, 2]),  # Combine all y-values
         legend = factor(rep(c("Pulse", colnames(selected_data())[1], colnames(selected_data())[2]), 
                             each = dim(selected_data())[1]))  # Control factor levels
