@@ -16,7 +16,7 @@ Fmax <- function(formula,
     return(regr$fitted)
   }
   
-  variables = all.vars(as.formula(formula))
+  variables = all.vars(formula)
   y.name = variables[1]
   covariates.names <- colnames(attr(terms(formula),"factors"))
   #data.all = model.frame(formula)
