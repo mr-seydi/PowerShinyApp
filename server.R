@@ -406,30 +406,48 @@ function(input, output, session) {
   # Power calculation triggered by the "Calculate Power" button
   power <- eventReactive(input$calculate, {
     isolate({
-      Power_calculator(
-        Method = input$test_type,
-        Sample_size = input$sample_size,
-        Iter_number = 100,
-        Baseline_data = selected_data(),
-        Signal = scaled_pulse(),
-        Conti_size = cont_size,
-        Noise_mu = input$mu,
-        Noise_sig = input$sigma,
-        Noise_fwhm = input$fwhm,
-        Alpha = 0.05
+      if (input$data_selection_type == "baseline") {
+        
+        Power_calculator(
+          Method = input$test_type,
+          Sample_size = input$sample_size,
+          Iter_number = 100,
+          Data = selected_data(),
+          Signal = scaled_pulse(),
+          Conti_size = cont_size,
+          Noise_mu = input$mu,
+          Noise_sig = input$sigma,
+          Noise_fwhm = input$fwhm,
+          Alpha = 0.05
       )
+      } else {
+        
+        Power_calculator(
+          Method = input$test_type,
+          Sample_size = input$sample_size,
+          Iter_number = 100,
+          Data = selected_data(),
+          Conti_size = cont_size,
+          Noise_mu = input$mu,
+          Noise_sig = input$sigma,
+          Noise_fwhm = input$fwhm,
+          Alpha = 0.05
+        )
+        
+      }
+      
     })
   })
   
-  # Render the power output as text
-  output$powerOutput <- renderText({
+  output$powerOutput <- renderUI({
     methods <- names(power())
-    result <- ""
-    for (m in methods) {
-      result <- paste(result, "Power of", m, ":", round(power()[[m]], 2))
-    }
-    result
+    result <- sapply(methods, function(m) {
+      paste("Power of", m, ":", round(power()[[m]], 2))
+    })
+    HTML(paste(result, collapse = "<br>"))
   })
+  
+  
   
 }
   

@@ -1,5 +1,7 @@
 #TWT function
 source("TWT2.R")
+#SnPM function
+source("Fmax.R")
 #path for vgrf_mean_data
 path <- "vgrf_fig2.txt"
 
@@ -124,7 +126,8 @@ amplitude_pulse <- function(data, amp){
 
 ##############Methods functions###########
 
-Power_calculator <- function(Methods ,Sample_size, Iter_number, Baseline_data, Signal, Conti_size,
+Power_calculator <- function(Methods ,Sample_size, Iter_number, Data,
+                             Signal, Conti_size,
                              Noise_mu, Noise_sig, Noise_fwhm, Alpha){
   
   power_list <- list()
@@ -136,17 +139,25 @@ Power_calculator <- function(Methods ,Sample_size, Iter_number, Baseline_data, S
   
   for (i in 1:Iter_number) {
     
-    noise1 <- noise_guassian_curve(number_of_curves = Sample_size, continuum_size = Conti_size)
-    noise2 <- noise_guassian_curve(number_of_curves = Sample_size, continuum_size = Conti_size)
-    
+    noise1 <- noise_guassian_curve(number_of_curves = Sample_size,
+                                   continuum_size = Conti_size)
+    noise2 <- noise_guassian_curve(number_of_curves = Sample_size,
+                                   continuum_size = Conti_size)
     noise1 <- smoothed_gussian_curves(noise1, Noise_mu, Noise_sig, Noise_fwhm)
     noise2 <- smoothed_gussian_curves(noise2, Noise_mu, Noise_sig, Noise_fwhm)
     
-    data1 <- data_generator(data = Baseline_data, signal = Signal, noise = noise1)
-    data2 <- data_generator(data = Baseline_data, noise = noise2)
+    if (missing(Signal)) {
+      data1 <- data_generator(data = Data[,1], noise = noise1)
+      data2 <- data_generator(data = Data[,2], noise = noise2)
+    } else {
+      data1 <- data_generator(data = Data, signal = Signal, noise = noise1)
+      data2 <- data_generator(data = Data, noise = noise2)      
+    }
     
+
     for (M in Methods) {
-      power_list[[M]][,i] <- Power_method(sampel1 = t(data1), sample2 = t(data2), method = M)
+      power_list[[M]][,i] <- Power_method(sampel1 = t(data1), sample2 = t(data2),
+                                          method = M)
     }
   }
   
@@ -219,123 +230,23 @@ p_spm <- function(data1, data2){
   return(p_val)
 }
 
-p_snpm <- function(data1, data2, niter=1000){
-  snpm       = spm1d$stats$nonparam$ttest2(data1, data2)
-  if (niter > snpm$nPermUnique){
-    niter      = niter-1
-  } else {
-    niter
-  }
-  snpmi      = snpm$inference(iterations=as.integer(niter))
-  pdf        = numpy$abs(snpmi$PDF0)
-  p <- sapply(abs(snpmi$z), function(z) mean(pdf > z))
-  return(p)
+p_snpm <- function(data1, data2, B = 1000){
+  
+  n1 = dim(data1)[1]
+  n2 = dim(data2)[1]
+  
+  
+  group12 = factor(c(rep(1,n1),rep(2,n2)))
+  data_group12 <- rbind(data1,data2)
+  
+  Fmax_pval = Fmax(data_group12 ~ group12)
+  return(Fmax_pval$adjusted_pval_F)
+  
 } 
+  
 
 
-
-global_test_spm <- function(Sample_size, Iter_number, Baseline_data, Signal, Conti_size,
-                            Noise_mu, Noise_sig, Noise_fwhm, Alpha){
-  
-  tstat_2sample_null<-matrix(NA,nrow = Iter_number  ,ncol = Conti_size)
-  tstat_2sample_alt<-matrix(NA,nrow = Iter_number,ncol = Conti_size)
-  
-  for (i in 1:Iter_number) {
-    
-    noise_null_1 <- noise_guassian_curve(number_of_curves = Sample_size, continuum_size = Conti_size)
-    noise_null_2 <- noise_guassian_curve(number_of_curves = Sample_size, continuum_size = Conti_size)
-    
-    noise_null_1 <- smoothed_gussian_curves(noise_null_1, Noise_mu, Noise_sig, Noise_fwhm)
-    noise_null_2 <- smoothed_gussian_curves(noise_null_2, Noise_mu, Noise_sig, Noise_fwhm)
-    
-    data_null_1 <- data_generator(data = Baseline_data, noise = noise_null_1)
-    data_null_2 <- data_generator(data = Baseline_data, noise = noise_null_2)
-    
-    noise_alt_1 <- noise_guassian_curve(number_of_curves = Sample_size, continuum_size = Conti_size)
-    noise_alt_2 <- noise_guassian_curve(number_of_curves = Sample_size, continuum_size = Conti_size)
-    
-    noise_alt_1 <- smoothed_gussian_curves(noise_alt_1, Noise_mu, Noise_sig, Noise_fwhm)
-    noise_alt_2 <- smoothed_gussian_curves(noise_alt_2, Noise_mu, Noise_sig, Noise_fwhm)
-    
-    data_alt_1 <- data_generator(data = Baseline_data, noise = noise_alt_1)
-    data_alt_2 <- data_generator(data = Baseline_data, signal = Signal, noise = noise_alt_2)
-    
-    tstat_2sample_null[i,] <- t_test(t(data_null_2), t(data_null_1), alternative = "greater",
-                                     equal.var = FALSE)$t_statistic
-    tstat_2sample_alt[i,] <- t_test(t(data_alt_2), t(data_alt_1), alternative = "greater",
-                                    equal.var = FALSE)$t_statistic
-  }
-  
-  
-  # max_t_2sample_null<-apply((tstat_2sample_null), 1, function(x) { x[which.max( abs(x) )]})
-  # max_t_2sample_alt<-apply((tstat_2sample_alt), 1, function(x) { x[which.max( abs(x) )]})
-  max_t_2sample_null<-apply((tstat_2sample_null), 1, max)
-  max_t_2sample_alt<-apply((tstat_2sample_alt), 1, max)
-  
-  threshold_2sample<-quantile(max_t_2sample_null,probs = (1-Alpha))
-  
-  power_2sample<-sum(max_t_2sample_alt>threshold_2sample)/Iter_number
-  return(power_2sample)
-  
-}
-
-
-
-t_test <- function(x, y, alternative, equal.var) {
-  # Calculate the sample sizes and means
-  n1 <- nrow(x)
-  n2 <- nrow(y)
-  mean_x <- colMeans(x)
-  mean_y <- colMeans(y)
-  
-  # Calculate the sample variances
-  var_x <- apply(x,2,var)
-  var_y <- apply(y,2,var)
-  
-  
-  if(equal.var){
-    df <- n1 + n2 - 2
-    # Calculate the pooled variance (assuming equal variances)
-    pooled_var <- ((n1 - 1) * var_x + (n2 - 1) * var_y) / (n1 + n2 - 2)
-    
-    # Calculate the standard error
-    se <- sqrt(pooled_var * (1/n1 + 1/n2))
-    
-    t_stat <- (mean_x - mean_y) / se
-    
-  } else if (!equal.var){
-    # Calculate the degrees of freedom for Welch's t-test
-    df <- ((var_x / n1 + var_y / n2)^2) / ((var_x^2 / (n1^2 * (n1 - 1))) +
-                                             (var_y^2 / (n2^2 * (n2 - 1))))
-    
-    t_stat <- (mean_x - mean_y) / sqrt((var_x / n1) + (var_y / n2))
-  }
-  
-  # Calculate the p-value
-  
-  if(alternative=="two_sided"){
-    p_value <- 2 * pt(-abs(t_stat), df, lower.tail = FALSE)
-  }
-  else if (alternative == "greater") {
-    p_value <- pt(t_stat, df, lower.tail = FALSE)
-  } else if (alternative == "less") {
-    p_value <- pt(t_stat, df, lower.tail = TRUE)
-  }
-  
-  
-  
-  # Create a result list
-  result <- list(
-    t_statistic = t_stat,
-    degrees_of_freedom = df,
-    p_value = p_value
-  )
-  
-  return(result)
-}
-
-
-#######Python codes##############
+#######Python noise and pulse##############
 
 SmoothGaussian_noise <- function(sample_size, continuum_size, mu, sigma, fwhm){
   noise   <- power1d$noise$SmoothGaussian( J=as.integer(sample_size), 

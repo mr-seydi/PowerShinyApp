@@ -120,15 +120,22 @@ ui <- fluidPage(
              fluidRow(
                column(4,
                       selectInput("test_type", "Method:", 
-                                  choices = c("IWT", "TWT", "Parametric_SPM"), multiple = TRUE, selected = "TWT"),
+                                  choices = c("IWT", "TWT",
+                                              "SPM" = "Parametric_SPM",
+                                              "SnPM"="Nonparametric_SPM"),
+                                  multiple = TRUE, selected = "TWT"),
                       actionButton("calculate", "Calculate Power")
                ),
                column(8,
-                      wellPanel(
-                        textOutput("powerOutput")
+                      # Add spacing to ensure the box doesn't appear too close to the top
+                      div(style = "margin-top: 20px;",   # Adjust the margin here
+                          wellPanel(
+                            htmlOutput("powerOutput")
+                          )
                       )
                )
+    
              )
     )
-  )
-)
+  )#tabsetPanel
+)#fluidPage(
