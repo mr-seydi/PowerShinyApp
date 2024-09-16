@@ -217,7 +217,7 @@ function(input, output, session) {
     
     # Generate the plot using ggplot2
     ggplot(plot_data, aes(x = x_values, y = y_values, group = line_group, color = line_group)) +
-      geom_line(size = 1.5) +  # Set line thickness
+      geom_line(linewidth = 1.5) +  # Set line thickness
       scale_color_manual(values = colorRampPalette(c("darkblue", "lightblue"))(ncol(smoothed_data()))) +  # Navy blue shades
       labs(title = "Smooth Gaussian Noise", x = "Index", y = "Value") +  # Add labels
       theme_minimal() +  # Use a minimal theme
@@ -320,7 +320,7 @@ function(input, output, session) {
     
     # Create the plot using ggplot
     ggplot(plot_data, aes(x = x_values, y = y_values, color = legend)) +
-      geom_line(size = 1.5) +  # Plot lines for each group
+      geom_line(linewidth = 1.5) +  # Plot lines for each group
       labs(title = "Selected Data", x = "Index", y = "Value") +  # Labels
       scale_color_manual(values = color_values) +  # Line colors
       theme_minimal() +  # Use a minimal theme
@@ -389,9 +389,9 @@ function(input, output, session) {
     # Create the plot using ggplot2
     ggplot() +
       # First layer: Individual lines
-      geom_line(data = plot_data, aes(x = x_values, y = y_values, group = interaction(line_group, label), color = label), size = 1, alpha = 0.4) +
+      geom_line(data = plot_data, aes(x = x_values, y = y_values, group = interaction(line_group, label), color = label), linewidth = 1, alpha = 0.4) +
       # Second layer: Mean lines without group aesthetic
-      geom_line(data = mean_data, aes(x = x_values, y = y_values, color = label), size = 2.5) +
+      geom_line(data = mean_data, aes(x = x_values, y = y_values, color = label), linewidth = 2.5) +
       scale_color_manual(values = colors_plot_data) +  # Set colors for both sample labels
       labs(title = "Generated Sample Data", x = "Index", y = "Value") +  # Add labels
       theme_minimal() +  # Use a minimal theme
