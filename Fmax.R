@@ -16,12 +16,13 @@ Fmax <- function(formula,
     return(regr$fitted)
   }
   
-  variables = all.vars(formula)
+  variables = all.vars(as.formula(formula))
   y.name = variables[1]
   covariates.names <- colnames(attr(terms(formula),"factors"))
   #data.all = model.frame(formula)
   cl <- match.call()
-  data <- model.frame(formula)[,y.name]
+  data <- model.frame(formula)[[1]] #the output of model.frame(formula) is a list
+
   
   
   if(is.fd(data)){ # data is a functional data object
