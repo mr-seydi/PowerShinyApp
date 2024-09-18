@@ -251,7 +251,11 @@ p_snpm <- function(data1, data2, B = 1000){
   group12 = factor(c(rep(1,n1),rep(2,n2)))
   data_group12 <- rbind(data1,data2)
   
-  Fmax_pval = Fmax(data_group12 ~ group12)
+  # Create a data frame that includes both data_group12 and group12
+  combined_data <- data.frame(data_group12, group12)
+  
+  # Pass the formula with the combined data to Fmax
+  Fmax_pval <- Fmax(data_group12 ~ group12, DATA = combined_data)
   return(Fmax_pval$adjusted_pval_F)
   
 } 
