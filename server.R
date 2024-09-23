@@ -76,7 +76,7 @@ function(input, output, session) {
   # Create a reactive UI for the 'type' selection based on dataset choice
   output$type_selector <- renderUI({
     switch(input$dataset_baseline,
-           "vGRF_Robinson" = selectInput("type_input", "Choose type:",
+           "vGRF_Robinson" = selectInput("type_input", h4("Choose type:"),
                                          choices = c("mean")),
            "vGRF_Phan" = selectInput("type_input", "Choose type:",
                                      choices = c("quiet", "normal")),
@@ -273,7 +273,6 @@ function(input, output, session) {
   
   
   
-  
   output$pulse_plot <- renderPlot({
     
     
@@ -401,8 +400,6 @@ function(input, output, session) {
   
   
   
-  
-  
   # Power calculation triggered by the "Calculate Power" button
   power <- eventReactive(input$calculate, {
     isolate({
@@ -440,6 +437,7 @@ function(input, output, session) {
   })
   
   output$powerOutput <- renderUI({
+    
     methods <- names(power())
     result <- sapply(methods, function(m) {
       paste("Power of", m, ":", round(power()[[m]], 2))
