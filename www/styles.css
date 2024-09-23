@@ -1,0 +1,16 @@
+#data_selection_type .radio {
+    font-size: 18px; /* Increase radio button text font size */
+}
+
+.selectize-input { 
+    font-size: 16px; /* Increase text font size in the input selection options*/
+}
+      
+.power_output {
+    margin-top: 20px; /* Adjust top margin in output of power */
+}
+
+.power_output .well {
+    height: 100px; /* Adjust the height to make it larger */
+    /* width: 100%;  You can also adjust the width if needed */
+}

@@ -22,60 +22,69 @@
 
 library(shiny)
 
+
+
+
 # Define UI for application
 ui <- fluidPage(
+  
+  
+  includeCSS("www/styles.css"),
+
+  
   titlePanel("Power ShinyApp"),
   
   
   
   # Create a tabset panel to organize different sections
   tabsetPanel(
-  tabPanel("Dataset Selection",
-   # Create a fluid row with radioButtons on the left and dataset selection on the right
-   fluidRow(
-     column(6,
-            # User selects data type (baseline or two-sample)
-            radioButtons("data_selection_type", "Choose the data type:",
-                         choices = c("Baseline Data" = "baseline", 
-                                     "Two-Sample Data" = "two_sample"),
-                         selected = "baseline")
-     ),
-     
-     column(6,
-            # Conditionally show baseline data selection inputs
-            conditionalPanel(
-              condition = "input.data_selection_type == 'baseline'",
-              fluidRow(
-                column(12,
-                   selectInput("dataset_baseline", "Choose a dataset:",
-                               choices = c("vGRF Robinson" = "vGRF_Robinson",
-                                           "vGRF Phan" = "vGRF_Phan",
-                                           "JCF" = "JCF",
-                                           "Hip Flexion Angle" = "Hip_Angle",
-                                           "Moment" = "Moment",
-                                           "Muscle Force" = "MF",
-                                           "EMG" = "EMG")),
-                   uiOutput("type_selector")
-                )
-              )
-            ),
-            
-            # Conditionally show two-sample data selection inputs
-            conditionalPanel(
-              condition = "input.data_selection_type == 'two_sample'",
-              selectInput("dataset_two_sample", "Choose a dataset with two group:",
-                choices = c("vGRF (normal and quiet)" = "vGRF_both",
-                            "JCF (lateral wedge and no wedge)" = "JCF_both",
-                            "Hip Flexion Angle (two individuals)" = "Hip_Angle_both",
-                            "Moment (direct and inverse kinematic)" = "Moment_both",
-                            "Muscle Force (control and diabetic)" = "MF_both",
-                            "EMG (young and adult)" = "EMG_both"))
-            )
-     )
-  )
-),
-  
-  
+    tabPanel("Dataset Selection",
+             # Create a fluid row with radioButtons on the left and dataset selection on the right
+             fluidRow(
+               column(6,
+                      # User selects data type (baseline or two-sample)
+                      radioButtons("data_selection_type", h3("Choose the data type:"),
+                                   choices = c("Baseline Data" = "baseline", 
+                                               "Two-Sample Data" = "two_sample"),
+                                   selected = "baseline")
+               ),
+               
+               column(6,
+                      # Conditionally show baseline data selection inputs
+                      conditionalPanel(
+                        condition = "input.data_selection_type == 'baseline'",
+                        fluidRow(
+                          column(12,
+                                 selectInput("dataset_baseline", h4("Choose a dataset:"),
+                                             choices = c("vGRF Robinson" = "vGRF_Robinson",
+                                                         "vGRF Phan" = "vGRF_Phan",
+                                                         "JCF" = "JCF",
+                                                         "Hip Flexion Angle" = "Hip_Angle",
+                                                         "Moment" = "Moment",
+                                                         "Muscle Force" = "MF",
+                                                         "EMG" = "EMG")),
+                                 
+                                 uiOutput("type_selector")
+                          )
+                        )
+                      ),
+                      
+                      # Conditionally show two-sample data selection inputs
+                      conditionalPanel(
+                        condition = "input.data_selection_type == 'two_sample'",
+                        selectInput("dataset_two_sample", h4("Choose a dataset with two group:"),
+                                    choices = c("vGRF (normal and quiet)" = "vGRF_both",
+                                                "JCF (lateral wedge and no wedge)" = "JCF_both",
+                                                "Hip Flexion Angle (two individuals)" = "Hip_Angle_both",
+                                                "Moment (direct and inverse kinematic)" = "Moment_both",
+                                                "Muscle Force (control and diabetic)" = "MF_both",
+                                                "EMG (young and adult)" = "EMG_both"))
+                      )
+               )
+             )
+    ),
+    
+    
     tabPanel("Plots",
              fluidRow(
                # First row with parameter boxes
@@ -119,7 +128,7 @@ ui <- fluidPage(
     tabPanel("Power Calculator",
              fluidRow(
                column(4,
-                      selectInput("test_type", "Method:", 
+                      selectInput("test_type", h3("Method:"), 
                                   choices = c("IWT", "TWT",
                                               "SPM" = "Parametric_SPM",
                                               "SnPM"="Nonparametric_SPM"),
@@ -127,14 +136,18 @@ ui <- fluidPage(
                       actionButton("calculate", "Calculate Power")
                ),
                column(8,
-                      # Add spacing to ensure the box doesn't appear too close to the top
-                      div(style = "margin-top: 20px;",   # Adjust the margin here
+                      # To display the power output
+                      div(
+                      # div () to be able to change the style of the output in the CSS file
                           wellPanel(
                             htmlOutput("powerOutput")
-                          )
+                          ),
+                          # named class = "power_output" to be able to change the
+                          # style of the output in the CSS file by calling this class
+                          class = "power_output"
                       )
                )
-    
+               
              )
     )
   )#tabsetPanel
