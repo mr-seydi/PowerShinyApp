@@ -1,0 +1,267 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={ui.R},
+  pdfauthor={more0056},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{ui.R}
+\author{more0056}
+\date{2024-09-22}
+
+\begin{document}
+\maketitle
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#}
+\CommentTok{\# This is the user{-}interface definition of a Shiny web application. You can}
+\CommentTok{\# run the application by clicking \textquotesingle{}Run App\textquotesingle{} above.}
+\CommentTok{\#}
+\CommentTok{\# Find out more about building applications with Shiny here:}
+\CommentTok{\#}
+\CommentTok{\#    http://shiny.rstudio.com/}
+\CommentTok{\#}
+
+\CommentTok{\#In Shiny’s fluidPage layout system, column is a function that defines how much}
+\CommentTok{\#space a component should occupy within a row. This is based on a 12{-}column grid}
+\CommentTok{\#system that’s common in responsive design frameworks}
+
+\CommentTok{\# column(4, ...) which is one{-}third of the available width (12) for tables.}
+\CommentTok{\# column(8, ...) which is two{-}third of the available width (12) for plots}
+
+\CommentTok{\#In Shiny, h3() is used to create a header or title of level 3 in HTML, which is}
+\CommentTok{\#typically used to represent a subheading. It is part of a hierarchy of heading }
+\CommentTok{\#levels in HTML, where h1 is the highest level (largest and most important), }
+\CommentTok{\#and h6 is the lowest level (smallest and least important).}
+
+
+\FunctionTok{library}\NormalTok{(shiny)}
+
+\CommentTok{\# Define UI for application}
+\NormalTok{ui }\OtherTok{\textless{}{-}} \FunctionTok{fluidPage}\NormalTok{(}
+  
+  \FunctionTok{includeCSS}\NormalTok{(}\StringTok{"www/styles.css"}\NormalTok{),}
+
+  
+  \FunctionTok{titlePanel}\NormalTok{(}\StringTok{"Power ShinyApp"}\NormalTok{),}
+  
+  
+  
+  \CommentTok{\# Create a tabset panel to organize different sections}
+  \FunctionTok{tabsetPanel}\NormalTok{(}
+    \FunctionTok{tabPanel}\NormalTok{(}\StringTok{"Dataset Selection"}\NormalTok{,}
+             \CommentTok{\# Create a fluid row with radioButtons on the left and dataset selection on the right}
+             \FunctionTok{fluidRow}\NormalTok{(}
+               \FunctionTok{column}\NormalTok{(}\DecValTok{6}\NormalTok{,}
+                      \CommentTok{\# User selects data type (baseline or two{-}sample)}
+                      \FunctionTok{radioButtons}\NormalTok{(}\StringTok{"data\_selection\_type"}\NormalTok{, }\FunctionTok{h3}\NormalTok{(}\StringTok{"Choose the data type:"}\NormalTok{),}
+                                   \AttributeTok{choices =} \FunctionTok{c}\NormalTok{(}\StringTok{"Baseline Data"} \OtherTok{=} \StringTok{"baseline"}\NormalTok{, }
+                                               \StringTok{"Two{-}Sample Data"} \OtherTok{=} \StringTok{"two\_sample"}\NormalTok{),}
+                                   \AttributeTok{selected =} \StringTok{"baseline"}\NormalTok{)}
+\NormalTok{               ),}
+               
+               \FunctionTok{column}\NormalTok{(}\DecValTok{6}\NormalTok{,}
+                      \CommentTok{\# Conditionally show baseline data selection inputs}
+                      \FunctionTok{conditionalPanel}\NormalTok{(}
+                        \AttributeTok{condition =} \StringTok{"input.data\_selection\_type == \textquotesingle{}baseline\textquotesingle{}"}\NormalTok{,}
+                        \FunctionTok{fluidRow}\NormalTok{(}
+                          \FunctionTok{column}\NormalTok{(}\DecValTok{12}\NormalTok{,}
+                                 \FunctionTok{selectInput}\NormalTok{(}\StringTok{"dataset\_baseline"}\NormalTok{, }\StringTok{"Choose a dataset:"}\NormalTok{,}
+                                             \AttributeTok{choices =} \FunctionTok{c}\NormalTok{(}\StringTok{"vGRF Robinson"} \OtherTok{=} \StringTok{"vGRF\_Robinson"}\NormalTok{,}
+                                                         \StringTok{"vGRF Phan"} \OtherTok{=} \StringTok{"vGRF\_Phan"}\NormalTok{,}
+                                                         \StringTok{"JCF"} \OtherTok{=} \StringTok{"JCF"}\NormalTok{,}
+                                                         \StringTok{"Hip Flexion Angle"} \OtherTok{=} \StringTok{"Hip\_Angle"}\NormalTok{,}
+                                                         \StringTok{"Moment"} \OtherTok{=} \StringTok{"Moment"}\NormalTok{,}
+                                                         \StringTok{"Muscle Force"} \OtherTok{=} \StringTok{"MF"}\NormalTok{,}
+                                                         \StringTok{"EMG"} \OtherTok{=} \StringTok{"EMG"}\NormalTok{)),}
+                                 \FunctionTok{uiOutput}\NormalTok{(}\StringTok{"type\_selector"}\NormalTok{)}
+\NormalTok{                          )}
+\NormalTok{                        )}
+\NormalTok{                      ),}
+                      
+                      \CommentTok{\# Conditionally show two{-}sample data selection inputs}
+                      \FunctionTok{conditionalPanel}\NormalTok{(}
+                        \AttributeTok{condition =} \StringTok{"input.data\_selection\_type == \textquotesingle{}two\_sample\textquotesingle{}"}\NormalTok{,}
+                        \FunctionTok{selectInput}\NormalTok{(}\StringTok{"dataset\_two\_sample"}\NormalTok{, }\StringTok{"Choose a dataset with two group:"}\NormalTok{,}
+                                    \AttributeTok{choices =} \FunctionTok{c}\NormalTok{(}\StringTok{"vGRF (normal and quiet)"} \OtherTok{=} \StringTok{"vGRF\_both"}\NormalTok{,}
+                                                \StringTok{"JCF (lateral wedge and no wedge)"} \OtherTok{=} \StringTok{"JCF\_both"}\NormalTok{,}
+                                                \StringTok{"Hip Flexion Angle (two individuals)"} \OtherTok{=} \StringTok{"Hip\_Angle\_both"}\NormalTok{,}
+                                                \StringTok{"Moment (direct and inverse kinematic)"} \OtherTok{=} \StringTok{"Moment\_both"}\NormalTok{,}
+                                                \StringTok{"Muscle Force (control and diabetic)"} \OtherTok{=} \StringTok{"MF\_both"}\NormalTok{,}
+                                                \StringTok{"EMG (young and adult)"} \OtherTok{=} \StringTok{"EMG\_both"}\NormalTok{))}
+\NormalTok{                      )}
+\NormalTok{               )}
+\NormalTok{             )}
+\NormalTok{    ),}
+    
+    
+    \FunctionTok{tabPanel}\NormalTok{(}\StringTok{"Plots"}\NormalTok{,}
+             \FunctionTok{fluidRow}\NormalTok{(}
+               \CommentTok{\# First row with parameter boxes}
+               \FunctionTok{column}\NormalTok{(}\DecValTok{6}\NormalTok{,}
+                      \FunctionTok{wellPanel}\NormalTok{(}
+                        \FunctionTok{h3}\NormalTok{(}\StringTok{"Noise Parameters"}\NormalTok{),}
+                        \FunctionTok{numericInput}\NormalTok{(}\StringTok{"sample\_size"}\NormalTok{, }\StringTok{"Sample Size:"}\NormalTok{, }\AttributeTok{value =} \DecValTok{5}\NormalTok{, }\AttributeTok{min =} \DecValTok{1}\NormalTok{),}
+                        \FunctionTok{numericInput}\NormalTok{(}\StringTok{"mu"}\NormalTok{, }\StringTok{"Mean (μ):"}\NormalTok{, }\AttributeTok{value =} \DecValTok{0}\NormalTok{),}
+                        \FunctionTok{numericInput}\NormalTok{(}\StringTok{"sigma"}\NormalTok{, }\StringTok{"Standard Deviation (σ):"}\NormalTok{, }\AttributeTok{value =} \DecValTok{200}\NormalTok{, }\AttributeTok{min =} \DecValTok{0}\NormalTok{),}
+                        \FunctionTok{numericInput}\NormalTok{(}\StringTok{"fwhm"}\NormalTok{, }\StringTok{"Full Width at Half Maximum (FWHM):"}\NormalTok{, }\AttributeTok{min =} \DecValTok{0}\NormalTok{, }\AttributeTok{value =} \DecValTok{10}\NormalTok{),}
+                        \FunctionTok{textOutput}\NormalTok{(}\StringTok{"error\_message\_noise"}\NormalTok{)}
+\NormalTok{                      )}
+\NormalTok{               ),}
+               \FunctionTok{column}\NormalTok{(}\DecValTok{6}\NormalTok{,}
+                      \FunctionTok{conditionalPanel}\NormalTok{(}
+                        \AttributeTok{condition =} \StringTok{"input.data\_selection\_type == \textquotesingle{}baseline\textquotesingle{}"}\NormalTok{,}
+                        \FunctionTok{wellPanel}\NormalTok{(}
+                          \FunctionTok{h3}\NormalTok{(}\StringTok{"Pulse Parameters"}\NormalTok{),}
+                          \FunctionTok{numericInput}\NormalTok{(}\StringTok{"center"}\NormalTok{, }\StringTok{"Center"}\NormalTok{, }\AttributeTok{value =} \DecValTok{50}\NormalTok{, }\AttributeTok{min =} \DecValTok{0}\NormalTok{, }\AttributeTok{max =} \DecValTok{100}\NormalTok{),}
+                          \FunctionTok{numericInput}\NormalTok{(}\StringTok{"fwhm\_pulse"}\NormalTok{, }\StringTok{"Full Width at Half Maximum (FWHM):"}\NormalTok{, }\AttributeTok{min =} \DecValTok{1}\NormalTok{, }\AttributeTok{value =} \DecValTok{20}\NormalTok{),}
+                          \FunctionTok{numericInput}\NormalTok{(}\StringTok{"amplitude"}\NormalTok{, }\StringTok{"Amplitude"}\NormalTok{, }\AttributeTok{value =} \DecValTok{300}\NormalTok{, }\AttributeTok{step =} \FloatTok{0.1}\NormalTok{),}
+                          \FunctionTok{textOutput}\NormalTok{(}\StringTok{"error\_message\_pulse"}\NormalTok{)}
+\NormalTok{                        )}
+\NormalTok{                      )}
+\NormalTok{               )}
+\NormalTok{             ),}
+             \FunctionTok{fluidRow}\NormalTok{(}
+               \CommentTok{\# Second row with plots}
+               \FunctionTok{column}\NormalTok{(}\DecValTok{4}\NormalTok{,}
+                      \FunctionTok{plotOutput}\NormalTok{(}\StringTok{"noise\_plot"}\NormalTok{)}
+\NormalTok{               ),}
+               \FunctionTok{column}\NormalTok{(}\DecValTok{4}\NormalTok{,}
+                      \FunctionTok{plotOutput}\NormalTok{(}\StringTok{"pulse\_plot"}\NormalTok{)}
+\NormalTok{               ),}
+               \FunctionTok{column}\NormalTok{(}\DecValTok{4}\NormalTok{,}
+                      \FunctionTok{plotOutput}\NormalTok{(}\StringTok{"data\_plot"}\NormalTok{)}
+\NormalTok{               )}
+\NormalTok{             )}
+\NormalTok{    ),}
+    
+    \FunctionTok{tabPanel}\NormalTok{(}\StringTok{"Power Calculator"}\NormalTok{,}
+             \FunctionTok{fluidRow}\NormalTok{(}
+               \FunctionTok{column}\NormalTok{(}\DecValTok{4}\NormalTok{,}
+                      \FunctionTok{selectInput}\NormalTok{(}\StringTok{"test\_type"}\NormalTok{, }\StringTok{"Method:"}\NormalTok{, }
+                                  \AttributeTok{choices =} \FunctionTok{c}\NormalTok{(}\StringTok{"IWT"}\NormalTok{, }\StringTok{"TWT"}\NormalTok{,}
+                                              \StringTok{"SPM"} \OtherTok{=} \StringTok{"Parametric\_SPM"}\NormalTok{,}
+                                              \StringTok{"SnPM"}\OtherTok{=}\StringTok{"Nonparametric\_SPM"}\NormalTok{),}
+                                  \AttributeTok{multiple =} \ConstantTok{TRUE}\NormalTok{, }\AttributeTok{selected =} \StringTok{"TWT"}\NormalTok{),}
+                      \FunctionTok{actionButton}\NormalTok{(}\StringTok{"calculate"}\NormalTok{, }\StringTok{"Calculate Power"}\NormalTok{)}
+\NormalTok{               ),}
+               \FunctionTok{column}\NormalTok{(}\DecValTok{8}\NormalTok{,}
+                      \CommentTok{\# Add spacing to ensure the box doesn\textquotesingle{}t appear too close to the top}
+                      \FunctionTok{div}\NormalTok{(}\AttributeTok{style =} \StringTok{"margin{-}top: 20px;"}\NormalTok{,   }\CommentTok{\# Adjust the margin here}
+                          \FunctionTok{wellPanel}\NormalTok{(}
+                            \FunctionTok{htmlOutput}\NormalTok{(}\StringTok{"powerOutput"}\NormalTok{)}
+\NormalTok{                          )}
+\NormalTok{                      )}
+\NormalTok{               )}
+               
+\NormalTok{             )}
+\NormalTok{    )}
+\NormalTok{  )}\CommentTok{\#tabsetPanel}
+\NormalTok{)}\CommentTok{\#fluidPage(}
+\end{Highlighting}
+\end{Shaded}
+
+
+\end{document}

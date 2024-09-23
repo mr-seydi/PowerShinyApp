@@ -145,6 +145,7 @@ Power_calculator <- function(Methods ,Sample_size, Iter_number, Data,
   
   for (i in 1:Iter_number) {
     
+    
     # Increment the progress bar with each iteration
     incProgress(1 / Iter_number, detail = paste("Iteration", i, "of",
                                                 Iter_number))
