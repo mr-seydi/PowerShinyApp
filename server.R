@@ -218,13 +218,22 @@ function(input, output, session) {
     # Generate the plot using ggplot2
     ggplot(plot_data, aes(x = x_values, y = y_values, group = line_group, color = line_group)) +
       geom_line(linewidth = 1.5) +  # Set line thickness
-      scale_color_manual(values = colorRampPalette(c("darkblue", "lightblue"))(ncol(smoothed_data()))) +  # Navy blue shades
+      scale_color_manual(values = colorRampPalette(c("darkblue",
+                         "lightblue"))(ncol(smoothed_data())),
+                         labels = c(1:ncol(smoothed_data()))) +  # Navy blue shades
       labs(title = "Smooth Gaussian Noise", x = "Index", y = "Value") +  # Add labels
       theme_minimal() +  # Use a minimal theme
       theme(plot.title = element_text(hjust = 0.5)) +  # Center the plot title
-      theme(legend.position = "none")
+      theme(legend.position = "bottom")+
+      #increase the font size of the labels and axis numbers
+      theme(axis.text.x = element_text(size = 12),
+            axis.text.y = element_text(size = 12),
+            axis.title.x = element_text(size = 14),
+            axis.title.y = element_text(size = 14),
+            plot.title = element_text(size = 16),
+            #remove legend title
+            legend.title = element_blank())
       
-    
   })
   
   
@@ -324,7 +333,15 @@ function(input, output, session) {
       scale_color_manual(values = color_values) +  # Line colors
       theme_minimal() +  # Use a minimal theme
       theme(plot.title = element_text(hjust = 0.5)) +  # Center the title
-      theme(legend.position = "bottom",legend.title = element_blank())
+      theme(legend.position = "bottom")+
+      #increase the font size of the labels and axis numbers
+      theme(axis.text.x = element_text(size = 12),
+            axis.text.y = element_text(size = 12),
+            axis.title.x = element_text(size = 14),
+            axis.title.y = element_text(size = 14),
+            plot.title = element_text(size = 16),
+            legend.text = element_text(size = 9),
+            legend.title = element_blank())
   })
   
   
@@ -395,7 +412,17 @@ function(input, output, session) {
       labs(title = "Generated Sample Data", x = "Index", y = "Value") +  # Add labels
       theme_minimal() +  # Use a minimal theme
       theme(plot.title = element_text(hjust = 0.5)) +  # Center the plot title
-      theme(legend.position = "bottom", legend.title = element_blank())  # Move legend to bottom
+      theme(legend.position = "bottom")+  # Move legend to bottom
+      #increase the font size of the labels and axis numbers
+      theme(axis.text.x = element_text(size = 12),
+            axis.text.y = element_text(size = 12),
+            axis.title.x = element_text(size = 14),
+            axis.title.y = element_text(size = 14),
+            plot.title = element_text(size = 16),
+            #increase legends font and element size
+            legend.text = element_text(size = 12),
+            legend.title = element_blank())
+    
   })
   
   
