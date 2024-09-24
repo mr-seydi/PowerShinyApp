@@ -168,7 +168,7 @@ Power_calculator <- function(Methods ,Sample_size, Iter_number, Data,
     
 
     for (M in Methods) {
-      power_list[[M]][,i] <- Power_method(sampel1 = t(data1), sample2 = t(data2),
+      power_list[[M]][,i] <- Pval_method(sampel1 = t(data1), sample2 = t(data2),
                                           method = M)
     }
   }
@@ -213,7 +213,7 @@ Power_calculator <- function(Methods ,Sample_size, Iter_number, Data,
 
 
 
-Power_method <- function(sampel1,sample2,method) {
+Pval_method <- function(sampel1,sample2,method) {
   if (method=="IWT") {
     pval <- IWT(sampel1,sample2)
   } else if (method=="TWT"){
