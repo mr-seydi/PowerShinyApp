@@ -129,89 +129,121 @@ amplitude_pulse <- function(data, amp){
 
 ##############Methods functions###########
 
-Power_calculator <- function(Methods ,Sample_size, Iter_number, Data,
-                             Signal, Conti_size,
-                             Noise_mu, Noise_sig, Noise_fwhm, Alpha){
-  
-  power_list <- list()
-  
+Initialize_method_list <- function(Methods, Conti_size=101, Iter_number=100){
+  method_list <- list()
   for (M in Methods) {
-    p_values <- matrix(NA,nrow = Conti_size, ncol = Iter_number)
-    power_list[[M]] <- p_values
+    method_list[[M]] <- matrix(NA,nrow = Conti_size, ncol = Iter_number)
   }
-  
-  # Progress indicator for the iteration loop
-  withProgress(message = 'Calculating Power...', value = 0, {
-  
-  for (i in 1:Iter_number) {
-    
-    
-    # Increment the progress bar with each iteration
-    incProgress(1 / Iter_number, detail = paste("Iteration", i, "of",
-                                                Iter_number))
-    
-    
-    noise1 <- noise_guassian_curve(number_of_curves = Sample_size,
-                                   continuum_size = Conti_size)
-    noise2 <- noise_guassian_curve(number_of_curves = Sample_size,
-                                   continuum_size = Conti_size)
-    noise1 <- smoothed_gussian_curves(noise1, Noise_mu, Noise_sig, Noise_fwhm)
-    noise2 <- smoothed_gussian_curves(noise2, Noise_mu, Noise_sig, Noise_fwhm)
-    
-    if (missing(Signal)) {
-      data1 <- data_generator(data = Data[,1], noise = noise1)
-      data2 <- data_generator(data = Data[,2], noise = noise2)
-    } else {
-      data1 <- data_generator(data = Data, signal = Signal, noise = noise1)
-      data2 <- data_generator(data = Data, noise = noise2)      
-    }
-    
+  return(method_list)
+}
 
-    for (M in Methods) {
-      power_list[[M]][,i] <- Pval_method(sampel1 = t(data1), sample2 = t(data2),
-                                          method = M) #p_values dimension is continuum_size*Iter_number
-    }
-  }
-    
-  }) # Closing withProgress block here
+Power_data_generator <- function(Sample_size, Data,
+                                 Signal, Conti_size = 101,
+                                 Noise_mu, Noise_sig, Noise_fwhm){
   
-    
-  # After all iterations, calculate the final power for each method  
+  noise1 <- noise_guassian_curve(number_of_curves = Sample_size,
+                                 continuum_size = Conti_size)
+  noise2 <- noise_guassian_curve(number_of_curves = Sample_size,
+                                 continuum_size = Conti_size)
+  noise1 <- smoothed_gussian_curves(noise1, Noise_mu, Noise_sig, Noise_fwhm)
+  noise2 <- smoothed_gussian_curves(noise2, Noise_mu, Noise_sig, Noise_fwhm)
+  
+  if (is.null(Signal)) {
+    data1 <- data_generator(data = Data[,1], noise = noise1)
+    data2 <- data_generator(data = Data[,2], noise = noise2)
+  } else {
+    data1 <- data_generator(data = Data, signal = Signal, noise = noise1)
+    data2 <- data_generator(data = Data, noise = noise2)      
+  }
+  
+  return(list(data1 = data1, data2 = data2))
+}
+
+Pvalue_calculator <- function(method_list, data1, data2, i){
+  
+  Methods <- names(method_list)
+  
   for (M in Methods) {
-    pvalue_less_alpha=power_list[[M]]<Alpha
-    power=sum(colSums(pvalue_less_alpha)>0)/Iter_number
-    power_list[[M]] <- power
+    #p_values dimension is continuum_size*Iter_number
+    method_list[[M]][, i] <- Pval_method(sampel1 = t(data1), sample2 = t(data2),
+                                         method = M)
   }
-  
-  return(power_list)
+  return(method_list) #Filled in method list
 }
 
 
-# Power_calculator <- function(Method ,Sample_size, Iter_number, Baseline_data, Signal, Conti_size,
+Power_calculator <- function(Pvalues, Iter_number, Alpha){
+  
+  Methods <- names(Pvalues)
+  
+  for (M in Methods) {
+    pvalue_less_alpha <- Pvalues[[M]] < Alpha
+    power <- sum(colSums(pvalue_less_alpha) > 0) / Iter_number
+    Pvalues[[M]] <- power
+  }
+  
+  return(Pvalues)
+  
+}
+
+# 
+# Power_calculator <- function(Methods ,Sample_size, Iter_number, Data,
+#                              Signal, Conti_size,
 #                              Noise_mu, Noise_sig, Noise_fwhm, Alpha){
 #   
-#   p_values <- matrix(NA,nrow = Conti_size, ncol = Iter_number)
+#   power_list <- list()
+#   
+#   for (M in Methods) {
+#     p_values <- matrix(NA,nrow = Conti_size, ncol = Iter_number)
+#     power_list[[M]] <- p_values
+#   }
+#   
+#   # Progress indicator for the iteration loop
+#   withProgress(message = 'Calculating Power...', value = 0, {
+#   
 #   for (i in 1:Iter_number) {
 #     
-#     noise1 <- noise_guassian_curve(number_of_curves = Sample_size, continuum_size = Conti_size)
-#     noise2 <- noise_guassian_curve(number_of_curves = Sample_size, continuum_size = Conti_size)
 #     
+#     # Increment the progress bar with each iteration
+#     incProgress(1 / Iter_number, detail = paste("Iteration", i, "of",
+#                                                 Iter_number))
+#     
+#     
+#     noise1 <- noise_guassian_curve(number_of_curves = Sample_size,
+#                                    continuum_size = Conti_size)
+#     noise2 <- noise_guassian_curve(number_of_curves = Sample_size,
+#                                    continuum_size = Conti_size)
 #     noise1 <- smoothed_gussian_curves(noise1, Noise_mu, Noise_sig, Noise_fwhm)
 #     noise2 <- smoothed_gussian_curves(noise2, Noise_mu, Noise_sig, Noise_fwhm)
 #     
-#     data1 <- data_generator(data = Baseline_data, signal = Signal, noise = noise1)
-#     data2 <- data_generator(data = Baseline_data, noise = noise2)
+#     if (missing(Signal)) {
+#       data1 <- data_generator(data = Data[,1], noise = noise1)
+#       data2 <- data_generator(data = Data[,2], noise = noise2)
+#     } else {
+#       data1 <- data_generator(data = Data, signal = Signal, noise = noise1)
+#       data2 <- data_generator(data = Data, noise = noise2)      
+#     }
 #     
-#     p_values[,i] <- Power_method(sampel1 = t(data1), sample2 = t(data2), method = Method)
-#     #p_values dimension is continuum_size*Iter_number
+# 
+#     for (M in Methods) {
+#       power_list[[M]][,i] <- Pval_method(sampel1 = t(data1), sample2 = t(data2),
+#                                           method = M) #p_values dimension is continuum_size*Iter_number
+#     }
 #   }
-#   #dim(p_values)
-#   pvalue_less_alpha=p_values<Alpha
-#   power=sum(colSums(pvalue_less_alpha)>0)/Iter_number
-#   return(power)
+#     
+#   }) # Closing withProgress block here
+#   
+#     
+#   # After all iterations, calculate the final power for each method  
+#   for (M in Methods) {
+#     pvalue_less_alpha=power_list[[M]]<Alpha
+#     power=sum(colSums(pvalue_less_alpha)>0)/Iter_number
+#     power_list[[M]] <- power
+#   }
+#   
+#   return(power_list)
 # }
-
-
+# 
 
 Pval_method <- function(sampel1,sample2,method) {
   if (method=="IWT") {
