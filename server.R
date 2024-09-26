@@ -426,42 +426,57 @@ function(input, output, session) {
   })
   
   
-  
+  iteration_number = 100
   # Power calculation triggered by the "Calculate Power" button
   power <- eventReactive(input$calculate, {
     isolate({
-      if (input$data_selection_type == "baseline") {
         
-        Power_calculator(
-          Method = input$test_type,
-          Sample_size = input$sample_size,
-          Iter_number = 100,
-          Data = selected_data(),
-          Signal = scaled_pulse(),
-          Conti_size = cont_size,
-          Noise_mu = input$mu,
-          Noise_sig = input$sigma,
-          Noise_fwhm = input$fwhm,
-          Alpha = 0.05
-      )
-      } else {
+        method_list <- Initialize_method_list(Methods = input$test_type,
+                                              Conti_size = cont_size,
+                                              Iter_number = iteration_number)
         
-        Power_calculator(
-          Method = input$test_type,
-          Sample_size = input$sample_size,
-          Iter_number = 100,
-          Data = selected_data(),
-          Conti_size = cont_size,
-          Noise_mu = input$mu,
-          Noise_sig = input$sigma,
-          Noise_fwhm = input$fwhm,
-          Alpha = 0.05
-        )
+        # Progress indicator for the iteration loop
+        withProgress(message = 'Calculating Power...', value = 0, {
+          
+          for (i in 1:iteration_number) {
+            
+            # Increment the progress bar with each iteration
+            incProgress(1 / iteration_number, detail = paste("Iteration", i,
+                                                             "of",
+                                                             iteration_number))
+            
+            # Generate data
+            data <- Power_data_generator(input$sample_size,
+                       Data = selected_data(),
+                       Signal = if (input$data_selection_type == "baseline") scaled_pulse() else NULL,
+                       Conti_size = cont_size,
+                       Noise_mu = input$mu,
+                       Noise_sig = input$sigma,
+                       Noise_fwhm = input$fwhm)
+            
+            # update the method_list object iteratively within the loop and pass
+            #it back through each iteration, so the results accumulate across all
+            #iterations.
+            
+            method_list <- Pvalue_calculator(method_list,
+                                                 data$data1, data$data2, i)
+            
+          } #for
+          
+        }) #progress
         
-      }
-      
-    })
-  })
+        Power_calculator(method_list, iteration_number, Alpha = 0.05)
+        
+          
+
+    }) #isolate
+  }) #power
+        
+        
+
+  
+  
+  
   
   output$powerOutput <- renderUI({
     

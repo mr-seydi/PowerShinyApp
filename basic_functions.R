@@ -169,7 +169,7 @@ Power_calculator <- function(Methods ,Sample_size, Iter_number, Data,
 
     for (M in Methods) {
       power_list[[M]][,i] <- Pval_method(sampel1 = t(data1), sample2 = t(data2),
-                                          method = M)
+                                          method = M) #p_values dimension is continuum_size*Iter_number
     }
   }
     
