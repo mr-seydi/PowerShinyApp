@@ -21,13 +21,15 @@
 
 
 library(shiny)
-
+library(shinyjs)
 
 
 
 # Define UI for application
 ui <- fluidPage(
   
+  # Initialize shinyjs
+  useShinyjs(),
   
   includeCSS("www/styles.css"),
 

@@ -224,7 +224,7 @@ function(input, output, session) {
       labs(title = "Smooth Gaussian Noise", x = "Index", y = "Value") +  # Add labels
       theme_minimal() +  # Use a minimal theme
       theme(plot.title = element_text(hjust = 0.5)) +  # Center the plot title
-      theme(legend.position = "bottom")+
+      theme(legend.position = "none")+
       #increase the font size of the labels and axis numbers
       theme(axis.text.x = element_text(size = 12),
             axis.text.y = element_text(size = 12),
@@ -233,6 +233,10 @@ function(input, output, session) {
             plot.title = element_text(size = 16),
             #remove legend title
             legend.title = element_blank())
+      
+      
+      
+    
       
   })
   
@@ -296,13 +300,13 @@ function(input, output, session) {
         x_values = rep(data_pulse()$x_values, 3),  # Repeat x_values for 3 lines
         y_values = c(scaled_pulse(), selected_data(), selected_data() +
                        scaled_pulse()),  # Combine all y-values
-        legend = factor(rep(c("Pulse", "Baseline data", "Baseline data + Pulse"), 
+        legend = factor(rep(c("Pulse", "Without pulse", "With pulse"), 
                             each = length(data_pulse()$x_values)))
       )
       
       color_values <- c("Pulse" = "black",
-                        "Baseline data" = "cadetblue",
-                        "Baseline data + Pulse" = "tomato")
+                        "Without pulse" = "cadetblue",
+                        "With pulse" = "tomato")
       
     } else {
       
@@ -340,11 +344,9 @@ function(input, output, session) {
             axis.title.x = element_text(size = 14),
             axis.title.y = element_text(size = 14),
             plot.title = element_text(size = 16),
-            legend.text = element_text(size = 9),
+            legend.text = element_text(size = 12),
             legend.title = element_blank())
   })
-  
-  
   
   
   
@@ -430,42 +432,51 @@ function(input, output, session) {
   # Power calculation triggered by the "Calculate Power" button
   power <- eventReactive(input$calculate, {
     isolate({
+      
+      # Disable the button
+      shinyjs::disable("calculate")
+      
+
+      method_list <- Initialize_method_list(Methods = input$test_type,
+                                            Conti_size = cont_size,
+                                            Iter_number = iteration_number)
+      
+      # Progress indicator for the iteration loop
+      withProgress(message = 'Calculating Power...', value = 0, {
         
-        method_list <- Initialize_method_list(Methods = input$test_type,
-                                              Conti_size = cont_size,
-                                              Iter_number = iteration_number)
-        
-        # Progress indicator for the iteration loop
-        withProgress(message = 'Calculating Power...', value = 0, {
+        for (i in 1:iteration_number) {
           
-          for (i in 1:iteration_number) {
-            
-            # Increment the progress bar with each iteration
-            incProgress(1 / iteration_number, detail = paste("Iteration", i,
-                                                             "of",
-                                                             iteration_number))
-            
-            # Generate data
-            data <- Power_data_generator(input$sample_size,
-                       Data = selected_data(),
-                       Signal = if (input$data_selection_type == "baseline") scaled_pulse() else NULL,
-                       Conti_size = cont_size,
-                       Noise_mu = input$mu,
-                       Noise_sig = input$sigma,
-                       Noise_fwhm = input$fwhm)
-            
-            # update the method_list object iteratively within the loop and pass
-            #it back through each iteration, so the results accumulate across all
-            #iterations.
-            
-            method_list <- Pvalue_calculator(method_list,
-                                                 data$data1, data$data2, i)
-            
-          } #for
+          # Increment the progress bar with each iteration
+          incProgress(1 / iteration_number, detail = paste("Iteration", i,
+                                                           "of",
+                                                           iteration_number))
           
-        }) #progress
+          # Generate data
+          data <- Power_data_generator(input$sample_size,
+                     Data = selected_data(),
+                     Signal = if (input$data_selection_type == "baseline") scaled_pulse() else NULL,
+                     Conti_size = cont_size,
+                     Noise_mu = input$mu,
+                     Noise_sig = input$sigma,
+                     Noise_fwhm = input$fwhm)
+          
+          # update the method_list object iteratively within the loop and pass
+          #it back through each iteration, so the results accumulate across all
+          #iterations.
+          
+          method_list <- Pvalue_calculator(method_list,
+                                               data$data1, data$data2, i)
+          
+        } #for
         
-        Power_calculator(method_list, iteration_number, Alpha = 0.05)
+      }) #progress
+      
+      power_results <- Power_calculator(method_list, iteration_number, Alpha = 0.05)
+      
+      return(power_results)
+      
+      # Re-enable the button after calculation
+      shinyjs::enable("calculate")
         
           
 
@@ -480,9 +491,19 @@ function(input, output, session) {
   
   output$powerOutput <- renderUI({
     
+    # Create a mapping between method names and display names
+    method_names <- c("IWT" = "IWT", 
+                      "TWT" = "TWT", 
+                      "Parametric_SPM" = "SPM", 
+                      "Nonparametric_SPM" = "SnPM")
+    
+    # Get the method names from power()
     methods <- names(power())
+    
+    # Create the result output, replacing method names with display names
     result <- sapply(methods, function(m) {
-      paste("Power of", m, ":", round(power()[[m]], 2))
+      display_name <- method_names[[m]] # Use display name
+      paste("Power of", display_name, ":", round(power()[[m]], 2))
     })
     HTML(paste(result, collapse = "<br>"))
   })
