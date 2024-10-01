@@ -435,8 +435,9 @@ function(input, output, session) {
       
       # Disable the button
       shinyjs::disable("calculate")
+        
       
-
+      
       method_list <- Initialize_method_list(Methods = input$test_type,
                                             Conti_size = cont_size,
                                             Iter_number = iteration_number)
@@ -470,13 +471,13 @@ function(input, output, session) {
         } #for
         
       }) #progress
-      
+
       power_results <- Power_calculator(method_list, iteration_number, Alpha = 0.05)
-      
-      return(power_results)
       
       # Re-enable the button after calculation
       shinyjs::enable("calculate")
+      
+      return(power_results)
         
           
 

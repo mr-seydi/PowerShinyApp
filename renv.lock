@@ -295,16 +295,6 @@
       ],
       "Hash": "8e1d18230ae26759bb837602300f5607"
     },
-    "fdatest": {
-      "Package": "fdatest",
-      "Version": "2.1.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "fda"
-      ],
-      "Hash": "e663c38c4c0ed2241972c2b6da6b9316"
-    },
     "fds": {
       "Package": "fds",
       "Version": "1.8",
@@ -907,6 +897,19 @@
         "xtable"
       ],
       "Hash": "54b26646816af9960a4c64d8ceec75d6"
+    },
+    "shinyjs": {
+      "Package": "shinyjs",
+      "Version": "2.1.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "digest",
+        "jsonlite",
+        "shiny"
+      ],
+      "Hash": "802e4786b353a4bb27116957558548d5"
     },
     "sourcetools": {
       "Package": "sourcetools",
