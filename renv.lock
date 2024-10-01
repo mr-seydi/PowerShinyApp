@@ -198,6 +198,16 @@
       ],
       "Hash": "0aaa05204035dc43ea0004b9c76611dd"
     },
+    "codetools": {
+      "Package": "codetools",
+      "Version": "0.2-20",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R"
+      ],
+      "Hash": "61e097f35917d342622f21cdc79c256e"
+    },
     "colorspace": {
       "Package": "colorspace",
       "Version": "2.1-1",
@@ -330,6 +340,21 @@
       ],
       "Hash": "15aeb8c27f5ea5161f9f6a641fafd93a"
     },
+    "future": {
+      "Package": "future",
+      "Version": "1.34.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "digest",
+        "globals",
+        "listenv",
+        "parallel",
+        "parallelly",
+        "utils"
+      ],
+      "Hash": "475771e3edb711591476be387c9a8c2e"
+    },
     "ggplot2": {
       "Package": "ggplot2",
       "Version": "3.5.1",
@@ -354,6 +379,17 @@
         "withr"
       ],
       "Hash": "44c6a2f8202d5b7e878ea274b1092426"
+    },
+    "globals": {
+      "Package": "globals",
+      "Version": "0.16.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "codetools"
+      ],
+      "Hash": "2580567908cafd4f187c1e5a91e98b7f"
     },
     "glue": {
       "Package": "glue",
@@ -552,6 +588,16 @@
       ],
       "Hash": "b8552d117e1b808b09a832f589b79035"
     },
+    "listenv": {
+      "Package": "listenv",
+      "Version": "0.9.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R"
+      ],
+      "Hash": "e2fca3e12e4db979dccc6e519b10a7ee"
+    },
     "locfit": {
       "Package": "locfit",
       "Version": "1.5-9.10",
@@ -671,6 +717,18 @@
         "utils"
       ],
       "Hash": "a623a2239e642806158bc4dc3f51565d"
+    },
+    "parallelly": {
+      "Package": "parallelly",
+      "Version": "1.38.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "parallel",
+        "tools",
+        "utils"
+      ],
+      "Hash": "6e8b139c1904f5e9e14c69db64453bbe"
     },
     "pcaPP": {
       "Package": "pcaPP",
