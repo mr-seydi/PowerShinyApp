@@ -12,6 +12,11 @@
 
 source("Data_functions.R")
 library(ggplot2)
+library(future)
+library(promises)
+library(bslib)
+future::plan(multisession)
+
 
 cont_size <- 101 #continuum_size (must match the dimension of baseline data)
 
@@ -428,70 +433,78 @@ function(input, output, session) {
   })
   
   
-  iteration_number = 100
-  # Power calculation triggered by the "Calculate Power" button
-  power <- eventReactive(input$calculate, {
-    isolate({
+  iteration_number <- 100
+  
+  # Initialize the ExtendedTask for the power calculation
+  power_task <- ExtendedTask$new(function(future_params, iteration_number) {
+    future_promise({
+      source("Data_functions.R") #source the functions in new session
       
-      # Disable the button
-      shinyjs::disable("calculate")
-        
+      # Initialize method list for power calculation
+      method_list <- Initialize_method_list(Methods = future_params$test_type,
+                                            Conti_size = future_params$cont_size,
+                                            Iter_number = iteration_number)
       
+      for (i in 1:iteration_number) {
+        
+        # Generate data
+        data <- Power_data_generator(future_params$sample_size,
+                                     Data = future_params$selected_data,
+                                     Signal = future_params$signal,
+                                     Conti_size = future_params$cont_size,
+                                     Noise_mu = future_params$noise_mu,
+                                     Noise_sig = future_params$noise_sigma,
+                                     Noise_fwhm = future_params$noise_fwhm)
+        
+        # Calculate p-values and update method_list
+        method_list <- Pvalue_calculator(method_list, data$data1, data$data2, i)
+      }
       
-        method_list <- Initialize_method_list(Methods = input$test_type,
-                                              Conti_size = cont_size,
-                                              Iter_number = iteration_number)
-        
-        # Progress indicator for the iteration loop
-        withProgress(message = 'Calculating Power...', value = 0, {
-          
-          for (i in 1:iteration_number) {
-            
-            # Increment the progress bar with each iteration
-            incProgress(1 / iteration_number, detail = paste("Iteration", i,
-                                                             "of",
-                                                             iteration_number))
-            
-            # Generate data
-            data <- Power_data_generator(input$sample_size,
-                       Data = selected_data(),
-                       Signal = if (input$data_selection_type == "baseline") scaled_pulse() else NULL,
-                       Conti_size = cont_size,
-                       Noise_mu = input$mu,
-                       Noise_sig = input$sigma,
-                       Noise_fwhm = input$fwhm)
-            
-            # update the method_list object iteratively within the loop and pass
-            #it back through each iteration, so the results accumulate across all
-            #iterations.
-            
-            method_list <- Pvalue_calculator(method_list,
-                                                 data$data1, data$data2, i)
-            
-          } #for
-          
-        }) #progress
-        
-        
-        # Re-enable the button after calculation
-        shinyjs::enable("calculate")
-        
-        power_results <- Power_calculator(method_list, iteration_number, Alpha = 0.05)
-        
-        return(power_results)
-        
-          
-
-    }) #isolate
-  }) #power
-        
-        
-
+      # Return the updated method_list
+      method_list
+      
+    }, seed = TRUE) # seed = TRUE parallel-safe random numbers are produced via the L'Ecuyer-CMRG method
+  }) |> bind_task_button("calculate")
+  
+  # Prepare the future parameters outside the future task
+  observeEvent(input$calculate, {
+    shinyjs::disable("calculate")  # Disable the button during task execution
+    
+    # Prepare the future parameters based on the input values.
+    # Future does not support reactive values
+    future_params <- list(
+      sample_size = input$sample_size,
+      selected_data = selected_data(),
+      signal = if (input$data_selection_type == "baseline") scaled_pulse() else NULL,
+      cont_size = cont_size,
+      noise_mu = input$mu,
+      noise_sigma = input$sigma,
+      noise_fwhm = input$fwhm,
+      test_type = input$test_type
+    )
+    
+    # Invoke the power calculation task
+    power_task$invoke(future_params, iteration_number)
+  })
   
   
   
+  
+  
+  # Monitor the task and output the result once it's complete
   
   output$powerOutput <- renderUI({
+    
+
+    # Get the result from the power task
+    task_result <- power_task$result()
+    
+    # Calculate the power based on the result
+    power_results <- Power_calculator(task_result, iteration_number, Alpha = 0.05)
+    
+    # Re-enable the button after calculation
+    shinyjs::enable("calculate")
+    
     
     # Create a mapping between method names and display names
     method_names <- c("IWT" = "IWT", 
@@ -500,12 +513,12 @@ function(input, output, session) {
                       "Nonparametric_SPM" = "SnPM")
     
     # Get the method names from power()
-    methods <- names(power())
+    methods <- names(power_results)
     
     # Create the result output, replacing method names with display names
     result <- sapply(methods, function(m) {
       display_name <- method_names[[m]] # Use display name
-      paste("Power of", display_name, ":", round(power()[[m]], 2))
+      paste("Power of", display_name, ":", round(power_results[[m]], 2))
     })
     HTML(paste(result, collapse = "<br>"))
   })
