@@ -438,46 +438,47 @@ function(input, output, session) {
         
       
       
-      method_list <- Initialize_method_list(Methods = input$test_type,
-                                            Conti_size = cont_size,
-                                            Iter_number = iteration_number)
-      
-      # Progress indicator for the iteration loop
-      withProgress(message = 'Calculating Power...', value = 0, {
+        method_list <- Initialize_method_list(Methods = input$test_type,
+                                              Conti_size = cont_size,
+                                              Iter_number = iteration_number)
         
-        for (i in 1:iteration_number) {
+        # Progress indicator for the iteration loop
+        withProgress(message = 'Calculating Power...', value = 0, {
           
-          # Increment the progress bar with each iteration
-          incProgress(1 / iteration_number, detail = paste("Iteration", i,
-                                                           "of",
-                                                           iteration_number))
+          for (i in 1:iteration_number) {
+            
+            # Increment the progress bar with each iteration
+            incProgress(1 / iteration_number, detail = paste("Iteration", i,
+                                                             "of",
+                                                             iteration_number))
+            
+            # Generate data
+            data <- Power_data_generator(input$sample_size,
+                       Data = selected_data(),
+                       Signal = if (input$data_selection_type == "baseline") scaled_pulse() else NULL,
+                       Conti_size = cont_size,
+                       Noise_mu = input$mu,
+                       Noise_sig = input$sigma,
+                       Noise_fwhm = input$fwhm)
+            
+            # update the method_list object iteratively within the loop and pass
+            #it back through each iteration, so the results accumulate across all
+            #iterations.
+            
+            method_list <- Pvalue_calculator(method_list,
+                                                 data$data1, data$data2, i)
+            
+          } #for
           
-          # Generate data
-          data <- Power_data_generator(input$sample_size,
-                     Data = selected_data(),
-                     Signal = if (input$data_selection_type == "baseline") scaled_pulse() else NULL,
-                     Conti_size = cont_size,
-                     Noise_mu = input$mu,
-                     Noise_sig = input$sigma,
-                     Noise_fwhm = input$fwhm)
-          
-          # update the method_list object iteratively within the loop and pass
-          #it back through each iteration, so the results accumulate across all
-          #iterations.
-          
-          method_list <- Pvalue_calculator(method_list,
-                                               data$data1, data$data2, i)
-          
-        } #for
+        }) #progress
         
-      }) #progress
-
-      power_results <- Power_calculator(method_list, iteration_number, Alpha = 0.05)
-      
-      # Re-enable the button after calculation
-      shinyjs::enable("calculate")
-      
-      return(power_results)
+        
+        # Re-enable the button after calculation
+        shinyjs::enable("calculate")
+        
+        power_results <- Power_calculator(method_list, iteration_number, Alpha = 0.05)
+        
+        return(power_results)
         
           
 
