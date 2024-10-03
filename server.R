@@ -524,6 +524,11 @@ function(input, output, session) {
   })
   
   
+  output$status <- renderText({
+    power_task$status()
+  })
+  
+  
   
 }
   

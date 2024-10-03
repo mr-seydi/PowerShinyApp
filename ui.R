@@ -136,7 +136,11 @@ ui <- fluidPage(
                                               "SnPM"="Nonparametric_SPM"),
                                   multiple = TRUE, selected = "TWT"),
                       actionButton("calculate", "Calculate Power"),
-                      actionButton("stop", "Stop Calculation")  # Button to stop the calculation
+                      actionButton("stop", "Stop Calculation"),  # Button to stop the calculation
+                      p(
+                        strong("Status: "),
+                        textOutput("status", inline = TRUE)
+                      ),
                ),
                column(8,
                       # To display the power output
