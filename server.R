@@ -19,7 +19,8 @@ future::plan(multisession)
 
 
 cont_size <- 101 #continuum_size (must match the dimension of baseline data)
-
+# Status File
+status_file <- "status.txt"
 
 function(input, output, session) {
   
@@ -435,30 +436,58 @@ function(input, output, session) {
   
   iteration_number <- 100
   
+
+
+  
+  # Delete file at end of session
+  onStop(function(){
+    print(status_file)
+    if(file.exists(status_file))
+      write("", status_file)
+  })
+  
+  # Register user interrupt
+  observeEvent(input$stop,{
+    print("Cancel")
+    fire_interrupt(status_file)
+  })
+  
+
+  
+  
   # Initialize the ExtendedTask for the power calculation
   power_task <- ExtendedTask$new(function(future_params, iteration_number) {
     future_promise({
-      source("Data_functions.R") #source the functions in new session
+      #source("Data_functions.R") #source the functions in new session
       
       # Initialize method list for power calculation
       method_list <- Initialize_method_list(Methods = future_params$test_type,
                                             Conti_size = future_params$cont_size,
                                             Iter_number = iteration_number)
+      write("start", status_file)
       
       for (i in 1:iteration_number) {
         
-        # Generate data
-        data <- Power_data_generator(future_params$sample_size,
-                                     Data = future_params$selected_data,
-                                     Signal = future_params$signal,
-                                     Conti_size = future_params$cont_size,
-                                     Noise_mu = future_params$noise_mu,
-                                     Noise_sig = future_params$noise_sigma,
-                                     Noise_fwhm = future_params$noise_fwhm)
+        # Check for user interrupts
+        if(interrupted(status_file)){ 
+          print("Stopping...")
+          stop("User Interrupt")
+        } else {
+          # Generate data
+          data <- Power_data_generator(future_params$sample_size,
+                                       Data = future_params$selected_data,
+                                       Signal = future_params$signal,
+                                       Conti_size = future_params$cont_size,
+                                       Noise_mu = future_params$noise_mu,
+                                       Noise_sig = future_params$noise_sigma,
+                                       Noise_fwhm = future_params$noise_fwhm)
+          
+          # Calculate p-values and update method_list
+          method_list <- Pvalue_calculator(method_list, data$data1, data$data2, i)
+        }
         
-        # Calculate p-values and update method_list
-        method_list <- Pvalue_calculator(method_list, data$data1, data$data2, i)
-      }
+
+      } # for loop
       
       # Return the updated method_list
       method_list
@@ -498,6 +527,8 @@ function(input, output, session) {
 
     # Get the result from the power task
     task_result <- power_task$result()
+
+    
     
     # Calculate the power based on the result
     power_results <- Power_calculator(task_result, iteration_number, Alpha = 0.05)
@@ -525,9 +556,24 @@ function(input, output, session) {
   
   
   output$status <- renderText({
-    power_task$status()
+    # Get the current status
+    current_status <- power_task$status()
+    
+    # Map statuses to user-friendly messages
+    if (current_status == "initial") {
+      return("Not yet started...")
+    } else if (current_status == "running") {
+      # Display running status with ellipsis
+      return("Running...")
+    } else if (current_status == "success") {
+      return("Finished")  # Or use "Done" if you prefer
+    } else if (current_status == "error") {
+      # Re-enable the button after getting error status (interrupt or other error)
+      shinyjs::enable("calculate")
+      return("Error occurred, please click on calculation button again or reload the app")  # Message for error status
+      
+    }
   })
-  
   
   
 }

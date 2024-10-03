@@ -137,10 +137,12 @@ ui <- fluidPage(
                                   multiple = TRUE, selected = "TWT"),
                       actionButton("calculate", "Calculate Power"),
                       actionButton("stop", "Stop Calculation"),  # Button to stop the calculation
-                      p(
-                        strong("Status: "),
-                        textOutput("status", inline = TRUE)
-                      ),
+                      # Wrap the status output in a div with a specific class
+                      div(
+                        strong("Calculation Status: "),
+                        textOutput("status", inline = TRUE),
+                        class = "status-output"  # Assign a class for styling
+                      )
                ),
                column(8,
                       # To display the power output

@@ -314,6 +314,22 @@ GaussianPulse <- function(continuum_size, pulse_center, fwhm, amplitude){
 }
 
 
+############Cancel button####################
+# Function to read the status from a file
+get_status <- function(status_file){
+  scan(status_file, what = "character",sep="\n")
+}
+# Function to write the status to a file
+set_status <- function(msg, status_file){
+  write(msg, status_file)
+}
+# Function to set the status to "interrupt"
+fire_interrupt <- function(status_file){
+  set_status("interrupt",status_file)
+}
 
+interrupted <- function(status_file){
+  get_status(status_file) == "interrupt"
+}
 
   

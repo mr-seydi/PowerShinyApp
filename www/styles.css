@@ -14,3 +14,27 @@
     height: 100px; /* Adjust the height to make it larger */
     /* width: 100%;  You can also adjust the width if needed */
 }
+
+
+.status-output {
+  position: fixed;      /* Position the status output fixed */
+  bottom: 20px;        /* Distance from the bottom */
+  right: 20px;         /* Distance from the right */
+  background-color: #c9e3fe; /* Optional: Background color for visibility */
+  padding: 10px;       /* Optional: Padding for spacing */
+  border: 1px solid #80bdff; /* Optional: Border for definition */
+  border-radius: 5px;  /* Optional: Rounded corners */
+  z-index: 1000;       /* Make sure it stays on top */
+    animation: pulse 1.5s infinite; /* Apply pulsing animation */
+}
+
+/* Define the pulse animation */
+@keyframes pulse {
+    0% { transform: scale(1); }          /* Initial size */
+    50% { transform: scale(1.05); }      /* Scale up */
+    100% { transform: scale(1); }         /* Scale back to initial size */
+}
+
+
+
+
