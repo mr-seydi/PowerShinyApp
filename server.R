@@ -483,7 +483,7 @@ function(input, output, session) {
                                        Noise_fwhm = future_params$noise_fwhm)
           
           # Calculate p-values and update method_list
-          method_list <- Pvalue_calculator(method_list, data$data1, data$data2, i)
+          method_list <- Pvalue_calculator(method_list, data$data1, data$data2)
         }
         
 
@@ -527,6 +527,7 @@ function(input, output, session) {
 
     # Get the result from the power task
     task_result <- power_task$result()
+    print(task_result)
 
     
     

@@ -132,7 +132,7 @@ amplitude_pulse <- function(data, amp){
 Initialize_method_list <- function(Methods, Conti_size=101, Iter_number=100){
   method_list <- list()
   for (M in Methods) {
-    method_list[[M]] <- matrix(NA,nrow = Conti_size, ncol = Iter_number)
+    method_list[[M]] <- matrix(,nrow = Conti_size, ncol = 0)
   }
   return(method_list)
 }
@@ -159,14 +159,15 @@ Power_data_generator <- function(Sample_size, Data,
   return(list(data1 = data1, data2 = data2))
 }
 
-Pvalue_calculator <- function(method_list, data1, data2, i){
+Pvalue_calculator <- function(method_list, data1, data2){
   
   Methods <- names(method_list)
   
   for (M in Methods) {
+    Pvalues <- Pval_method(sampel1 = t(data1), sample2 = t(data2),
+                           method = M)
     #p_values dimension is continuum_size*Iter_number
-    method_list[[M]][, i] <- Pval_method(sampel1 = t(data1), sample2 = t(data2),
-                                         method = M)
+    method_list[[M]] <- cbind(method_list[[M]], Pvalues)
   }
   return(method_list) #Filled in method list
 }
@@ -332,4 +333,13 @@ interrupted <- function(status_file){
   get_status(status_file) == "interrupt"
 }
 
+############## Parallel processing functions ####################
+# Custom combine function to accumulate matrices across iterations
+parallel_combine_function <- function(x, y) {
+  for (M in names(x)) {
+    # Combine matrices from the same method in both x and y
+    x[[M]] <- cbind(x[[M]], y[[M]])
+  }
+  return(x)
+}
   
