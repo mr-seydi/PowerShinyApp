@@ -1,11 +1,15 @@
 source("Data_functions.R")
+library(openxlsx)
 library(doParallel)
+
 
 
 Power_parallel <- function(data, sample_size,
                            noise_mean, noise_sd, noise_fwhm,
                            signal,
-                           method, n_iterations){
+                           method, n_iterations,
+                           Write_file = FALSE,
+                           file_name = "Power_Results.xlsx"){
   
   # Capture input argument names and values
   input_info <- data.frame(
@@ -49,13 +53,34 @@ Power_parallel <- function(data, sample_size,
     
   }
   
+  
   # Stop the parallel backend
   stopImplicitCluster()
   
-  return(list(Pvalues_methods = loop,
-              Input_Summary = input_info))
+  # Calculate the power based on the result
+  power_results <- Power_calculator(loop , n_iterations, Alpha = 0.05)
+  
+  # Add power results to input_info dataframe for each method
+  for (method_name in names(power_results)) {
+    # Add a new column with the power result for each method
+    input_info[[method_name]] <- power_results[[method_name]]
+  }
+  
+  if (Write_file == TRUE) {
+    
+    # Call the external function to write results to Excel
+    write_results_to_excel(loop, power_results, input_info, file_name)
+    
+    
+  }
+  
+  
+  
+  return(list(Pvalues_methods = loop, Power_results = power_results,
+              Input_Summary = input_info, File = file_name))
   
 }
+
 
 
 
