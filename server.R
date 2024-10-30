@@ -15,6 +15,7 @@ library(ggplot2)
 library(future)
 library(promises)
 library(bslib)
+library(dplyr)
 future::plan(multisession)
 
 
@@ -27,14 +28,20 @@ function(input, output, session) {
   # Reactive value to store the selected type input for baseline type
   type_input_value <- reactiveVal(NULL)
   
+  # Reactive value to store submitted interpolated data
+  submitted_data <- reactiveVal(NULL)
+  
   selected_data <- reactive({
     
     req(input$data_selection_type)  # Ensure data_selection_type is available before proceeding
     
     ####Data selection####
-    
-    # If 'baseline' is selected, use baseline datasets
-    if (input$data_selection_type == "two_sample") {
+    # If 'custom_curve' is selected, use the smoothed curve data from the first app
+    if (input$data_selection_type == "custom_curve") {
+      req(submitted_data())  # Ensure submitted_data() is available before proceeding
+      return(as.vector(submitted_data()))
+      
+    } else if (input$data_selection_type == "two_sample") { # If 'baseline' is selected, use baseline datasets
       ######------Data selection, two sample data------####
       # Reactive expression to handle two-sample data selection
       req(input$dataset_two_sample)  # Ensure dataset input is available before proceeding
@@ -99,6 +106,143 @@ function(input, output, session) {
     )
   })
   
+  
+  
+  
+  ########-------Custom Curve-------########
+  # Store additional points clicked by the user
+  user_points <- reactiveVal(data.frame(x = numeric(), y = numeric()))
+  
+  # Track if smoothing should be applied
+  smoothing <- reactiveVal(FALSE)
+  
+  # Store 101 evaluated points (including 0 and 100) after smoothing
+  smoothed_points <- reactiveVal(data.frame(x = numeric(), y = numeric()))
+  
+  # Reactive expression for filtered plot data
+  plot_data <- reactive({
+    user_points() %>%
+      dplyr::filter(x >= 0 & x <= 100 & y >= input$ymin  & y <= input$ymax)
+  })
+  
+  # Reactive expression for filtered smoothed data
+  smoothed_data_custom_curve <- reactive({
+    if (input$show_smooth && smoothing() && nrow(smoothed_points()) == 101) {
+      smoothed_points() %>%
+        dplyr::filter(x >= 0 & x <= 100 & y >= input$ymin & y <= input$ymax)
+    } else {
+      NULL
+    }
+  })
+  
+  # Reactive expression for interpolated smoothed data
+  interpolated_smoothed_data <- reactive({
+    req(smoothed_data_custom_curve())
+    if (is.null(smoothed_data_custom_curve())) {
+      return(NULL)
+    }
+    V <- smoothed_data_custom_curve()$y
+    x <- smoothed_data_custom_curve()$x
+    x_new <- seq(0, 100, length.out = 101)
+    approx(x, V, xout = x_new, na.rm = TRUE, rule = 2)$y
+  })
+  
+  # Add new points when the user clicks on the plot
+  observeEvent(input$plot_click, {
+    new_point <- data.frame(x = input$plot_click$x, y = input$plot_click$y)
+    
+    # Ensure x is within the allowed range (between 0 and 100)
+    if (new_point$x >= 0 && new_point$x <= 100) {
+      user_points(rbind(user_points(), new_point))
+      smoothing(FALSE) # Reset smoothing when a new point is added
+    }
+  })
+  
+  # Reset points when the reset button is clicked
+  observeEvent(input$reset, {
+    user_points(data.frame(x = numeric(), y = numeric()))
+    smoothed_points(data.frame(x = numeric(), y = numeric()))
+    smoothing(FALSE) # Reset smoothing
+  })
+  
+  # Undo last point when the undo button is clicked
+  observeEvent(input$undo, {
+    current_points <- user_points()
+    if (nrow(current_points) > 0) {
+      user_points(current_points[-nrow(current_points), ])
+    }
+    smoothing(FALSE) # Reset smoothing
+  })
+  
+  # Observe user points and apply smoothing if necessary
+  observe({
+    plot_data <- user_points()
+    if (nrow(plot_data) > 3) {
+      # Fit a LOESS model to the points, using the input smoothness span value
+      tryCatch({
+        loess_fit <- loess(y ~ x, data = plot_data, span = input$smoothness)
+        
+        # Generate 101 equally spaced points between 0 and 100
+        x_seq <- seq(0, 100, length.out = 101)
+        
+        # Predict the corresponding y values from the LOESS model
+        y_pred <- predict(loess_fit, newdata = data.frame(x = x_seq))
+        
+        # Store the evaluated points
+        smoothed_points(data.frame(x = x_seq, y = y_pred))
+        smoothing(TRUE) # Set smoothing to TRUE to display the smoothed curve
+      }, error = function(e) {
+        # If LOESS fitting fails, reset smoothing points
+        smoothed_points(data.frame(x = numeric(), y = numeric()))
+        smoothing(FALSE)
+        showNotification("LOESS model failed. Try increasing the smoothing value.", type = "error")
+      })
+    } else {
+      smoothed_points(data.frame(x = numeric(), y = numeric())) # No smoothing if not enough points
+      smoothing(FALSE) # Reset smoothing
+    }
+  })
+  
+  # Render the plot with the drawn points and connecting lines
+  output$plot <- renderPlot({
+    p <- ggplot(plot_data(), aes(x = x, y = y)) +
+      geom_point(color = "blue", size = 3) +
+      xlim(0, 100) + ylim(input$ymin, input$ymax) +
+      labs(x = "X-axis", y = "Y-axis", title = "Click to Draw a Curve") +
+      theme_minimal() +
+      theme(
+        axis.text.x = element_text(size = 12, color = "black"),
+        axis.text.y = element_text(size = 12, color = "black"),
+        axis.title.x = element_text(size = 14),
+        axis.title.y = element_text(size = 14)
+      )
+    
+    # Add connecting lines if there are user points
+    if (nrow(plot_data()) > 0) {
+      p <- p + geom_line(data = plot_data(), color = "red")
+    }
+    
+    # Add smoothing if checkbox is checked and smoothing is TRUE
+    if (!is.null(smoothed_data_custom_curve())) {
+      V <- smoothed_data_custom_curve()$y
+      x <- scale_minmax(smoothed_data_custom_curve()$x, a = 0, b = 100)
+      x_new <- seq(0, 100, length.out = 101)
+      smoothed_data_interpolated <- approx(x, V, xout = x_new, na.rm = TRUE, rule = 2)$y
+      submitted_data(smoothed_data_interpolated)
+      smoothed_data_interpolated <- cbind(y = smoothed_data_interpolated, x = x_new)
+      p <- p + geom_line(data = smoothed_data_interpolated, aes(x = x, y = y), color = "green", linewidth = 1)
+    }
+    
+    # Return the plot
+    p
+  })
+  
+  
+  
+  
+  
+  
+  ########------End of the Custom Curve------########
   
   # Observe changes in dataset input and reset type_input
   observeEvent(input$dataset_baseline, {
@@ -168,7 +312,7 @@ function(input, output, session) {
   default_sigma <- reactive({
     if (is.null(selected_data())) {
       return(0)  # Return a default value if data is empty
-    } else if (input$data_selection_type == "baseline") {
+    } else if (input$data_selection_type == "baseline" || input$data_selection_type == "custom_curve") {
       # Compute the half-range value
       half_range <- ( max(selected_data(), na.rm = T)-
                       min(selected_data(), na.rm = T)) / 2 
@@ -250,7 +394,7 @@ function(input, output, session) {
   
   # Reactive expression for generating Gaussian pulse data
   data_pulse <- reactive({
-    req(input$data_selection_type == "baseline")  # Ensure "baseline" is selected
+    req(input$data_selection_type == "baseline" || input$data_selection_type == "custom_curve")  # Ensure "baseline" is selected
     req(input$center, input$fwhm_pulse)
     gaussian_pulse(center = input$center, fwhm = input$fwhm_pulse, continuum_size = cont_size)
   })
@@ -261,7 +405,7 @@ function(input, output, session) {
   # Reactive expression for computing the half-max value of selected data
   default_amplitude <- reactive({
     
-    req(input$data_selection_type == "baseline")  # Ensure "baseline" is selected
+    req(input$data_selection_type == "baseline" || input$data_selection_type == "custom_curve")  # Ensure "baseline" is selected
     req(selected_data())  # Ensure selected_data() is available
     
     # Compute the half-max value
@@ -275,7 +419,7 @@ function(input, output, session) {
   # Observe changes to set the default value of amplitude input
   observe({
     
-    req(input$data_selection_type == "baseline")  # Ensure "baseline" is selected
+    req(input$data_selection_type == "baseline" || input$data_selection_type == "custom_curve")  # Ensure "baseline" is selected
     req(default_amplitude())  # Ensure default_amplitude() is available
     
     updateNumericInput(session, "amplitude", value = default_amplitude())
@@ -284,7 +428,7 @@ function(input, output, session) {
   
   # Reactive expression for scaling the pulse
   scaled_pulse <- reactive({
-    req(input$data_selection_type == "baseline")  # Ensure "baseline" is selected
+    req(input$data_selection_type == "baseline" || input$data_selection_type == "custom_curve")  # Ensure "baseline" is selected
     req(input$amplitude, data_pulse())
     amplitude_pulse(data = data_pulse()$density_val, amp = input$amplitude)
   })
@@ -298,10 +442,11 @@ function(input, output, session) {
     
     # Create a data frame with all necessary values, including a 'Legend' variable
     
-    if (input$data_selection_type == "baseline") {
+    if (input$data_selection_type == "baseline" || input$data_selection_type == "custom_curve") {
       
       req(scaled_pulse(), data_pulse())  # Ensure both are available
-      
+
+
       plot_data <- data.frame(
         x_values = rep(data_pulse()$x_values, 3),  # Repeat x_values for 3 lines
         y_values = c(scaled_pulse(), selected_data(), selected_data() +
@@ -309,6 +454,9 @@ function(input, output, session) {
         legend = factor(rep(c("Pulse", "Without pulse", "With pulse"), 
                             each = length(data_pulse()$x_values)))
       )
+      
+
+      
       
       color_values <- c("Pulse" = "black",
                         "Without pulse" = "cadetblue",
@@ -360,7 +508,7 @@ function(input, output, session) {
   
   output$data_plot <- renderPlot({
     
-    if (input$data_selection_type == "baseline") {
+    if (input$data_selection_type == "baseline" || input$data_selection_type == "custom_curve") {
       # Generate data with and without pulse
       Sample1 <- data_generator(data = selected_data(), signal = scaled_pulse(), noise = smoothed_data())
       Sample2 <- data_generator(data = selected_data(), noise = smoothed_data_2())
@@ -527,7 +675,6 @@ function(input, output, session) {
 
     # Get the result from the power task
     task_result <- power_task$result()
-    print(task_result)
 
     
     

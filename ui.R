@@ -47,7 +47,8 @@ ui <- fluidPage(
                       # User selects data type (baseline or two-sample)
                       radioButtons("data_selection_type", h3("Choose the data type:"),
                                    choices = c("Baseline Data" = "baseline", 
-                                               "Two-Sample Data" = "two_sample"),
+                                               "Two-Sample Data" = "two_sample",
+                                               "Custom Curve" = "custom_curve"),
                                    selected = "baseline")
                ),
                
@@ -83,6 +84,32 @@ ui <- fluidPage(
                                                 "EMG (young and adult)" = "EMG_both"))
                       )
                )
+             ),
+             # Add the Custom Curve panel below the dataset selection
+             conditionalPanel(
+               condition = "input.data_selection_type == 'custom_curve'",
+               fluidRow(
+                 column(12,
+                        titlePanel("Draw a Curve on a Coordinate Plane"),
+                        
+                        sidebarLayout(
+                          sidebarPanel(
+                            helpText("Click on the plot to draw a curve. Adjust the y-scale and manage points."),
+                            numericInput("ymin", "Select Minimum Y Value", value = 0, step = 1), # Input for minimum Y value
+                            numericInput("ymax", "Select Maximum Y Value", value = 10, step = 1),
+                            actionButton("reset", "Reset Points"),
+                            actionButton("undo", "Undo Last Point"),
+                            # UI element for controlling the smoothness (span of LOESS)
+                            sliderInput("smoothness", "Degree of Smoothness", min = 0, max = 1, value = 0.75, step = 0.05),
+                            checkboxInput("show_smooth", "Show Smoothed Curve", value = FALSE) # Checkbox to toggle smoothed curve
+                          ),
+                          
+                          mainPanel(
+                            plotOutput("plot", click = "plot_click"),
+                          )
+                        )
+                 )
+               )
              )
     ),
     
@@ -96,17 +123,17 @@ ui <- fluidPage(
                         numericInput("sample_size", "Sample Size:", value = 5, min = 1),
                         numericInput("mu", "Mean (μ):", value = 0),
                         numericInput("sigma", "Standard Deviation (σ):", value = 200, min = 0),
-                        numericInput("fwhm", "Full Width at Half Maximum (FWHM):", min = 0, value = 10),
+                        numericInput("fwhm", "Full Width at Half Maximum (FWHM):", min = 0, max=100, value = 10),
                         textOutput("error_message_noise")
                       )
                ),
                column(6,
                       conditionalPanel(
-                        condition = "input.data_selection_type == 'baseline'",
+                        condition = "input.data_selection_type == 'baseline' || input.data_selection_type == 'custom_curve'",
                         wellPanel(
                           h3("Pulse Parameters"),
                           numericInput("center", "Center", value = 50, min = 0, max = 100),
-                          numericInput("fwhm_pulse", "Full Width at Half Maximum (FWHM):", min = 1, value = 20),
+                          numericInput("fwhm_pulse", "Full Width at Half Maximum (FWHM):", min = 1, max=100, value = 20),
                           numericInput("amplitude", "Amplitude", value = 300, step = 0.1),
                           textOutput("error_message_pulse")
                         )

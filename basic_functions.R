@@ -92,6 +92,19 @@ smoothed_gussian_curves <- function(data, mu, sig, fwhm){
   return(trans_data) #dim(output)=continuum_size*number_of_curves
 }
 
+
+Noise_generator <- function(Sample_size, Continuum_size, Noise_mu, Noise_sig, Noise_fwhm){
+  
+  noise1 <- noise_guassian_curve(number_of_curves = Sample_size,
+                                 continuum_size = Continuum_size)
+  noise1 <- smoothed_gussian_curves(noise1, Noise_mu, Noise_sig, Noise_fwhm)
+  
+  sd_noise <- apply(noise1, 1, sd)
+  
+
+  return(list(noise1 = noise1, SD = sd_noise))
+}
+
 # Generating data (Baseline+noise+signal) or (Baseline+noise) or (Baseline+signal)
 data_generator <- function(data,signal,noise) {
   sample_size <- dim(noise)[2]
@@ -342,4 +355,45 @@ parallel_combine_function <- function(x, y) {
   }
   return(x)
 }
+
+# Handle the Excel file creation and saving for the results of parallel processing
+write_results_to_excel <- function(loop, power_results, input_info, file_name) {
+  # Create a new Excel workbook
+  wb <- createWorkbook()
   
+  # Write each method's p-values matrix to a separate sheet, named as "Method=PowerValue"
+  for (method_name in names(loop)) {
+    # Get the power result for this method
+    power_value <- round(power_results[[method_name]], 2)
+    
+    # Create a sheet name like "TWT=0.08"
+    sheet_name <- paste0(method_name, "=", format(power_value, nsmall = 2))
+    
+    # Add a new sheet
+    addWorksheet(wb, sheet_name)
+    
+    # Write the p-values matrix to the sheet
+    writeData(wb, sheet = sheet_name, loop[[method_name]])
+  }
+  
+  # Add a final sheet for the Input_Summary
+  addWorksheet(wb, "Input_Summary")
+  
+  # Write the input_info dataframe to the Input_Summary sheet
+  writeData(wb, sheet = "Input_Summary", input_info)
+  
+  # Save the workbook to the specified file name
+  saveWorkbook(wb, file_name, overwrite = TRUE)
+}
+  
+
+
+######Custom curve drawing function##########
+# Function to scale a vector to a specified [a,b] range
+scale_minmax <- function(v, a, b) {
+  v_range <- max(v, na.rm = TRUE) - min(v, na.rm = TRUE)
+  if (v_range == 0) {
+    return(rep(mean(c(a, b)), length(v)))
+  }
+  (v - min(v, na.rm = TRUE)) / v_range * (b - a) + a
+}
