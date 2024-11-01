@@ -652,7 +652,7 @@ function(input, output, session) {
     future_params <- list(
       sample_size = input$sample_size,
       selected_data = selected_data(),
-      signal = if (input$data_selection_type == "baseline") scaled_pulse() else NULL,
+      signal = if (input$data_selection_type == "baseline"||input$data_selection_type == "custom_curve") scaled_pulse() else NULL,
       cont_size = cont_size,
       noise_mu = input$mu,
       noise_sigma = input$sigma,
@@ -689,7 +689,9 @@ function(input, output, session) {
     method_names <- c("IWT" = "IWT", 
                       "TWT" = "TWT", 
                       "Parametric_SPM" = "SPM", 
-                      "Nonparametric_SPM" = "SnPM")
+                      "Nonparametric_SPM" = "SnPM",
+                      "ERL" = "ERL",
+                      "IATSE" = "IATSE")
     
     # Get the method names from power()
     methods <- names(power_results)

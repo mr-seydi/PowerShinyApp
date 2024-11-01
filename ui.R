@@ -160,7 +160,9 @@ ui <- fluidPage(
                       selectInput("test_type", h3("Method:"), 
                                   choices = c("IWT", "TWT",
                                               "SPM" = "Parametric_SPM",
-                                              "SnPM"="Nonparametric_SPM"),
+                                              "SnPM"="Nonparametric_SPM",
+                                              "ERL",
+                                              "IATSE"),
                                   multiple = TRUE, selected = "TWT"),
                       actionButton("calculate", "Calculate Power"),
                       actionButton("stop", "Stop Calculation"),  # Button to stop the calculation

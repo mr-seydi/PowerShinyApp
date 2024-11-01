@@ -191,8 +191,19 @@ Power_calculator <- function(Pvalues, Iter_number, Alpha){
   Methods <- names(Pvalues)
   
   for (M in Methods) {
-    pvalue_less_alpha <- Pvalues[[M]] < Alpha
-    power <- sum(colSums(pvalue_less_alpha) > 0) / Iter_number
+    
+    
+    # Check if the method is either "ERL" or "IATSE"
+    #Because those methods do not return p-values
+    if (M %in% c("ERL", "IATSE")) {
+      pvalue_less_alpha <- Pvalues[[M]]
+      # For "ERL" and "IATSE", only run this code
+      power <- sum(colSums(pvalue_less_alpha) > 0) / Iter_number
+    } else {
+      pvalue_less_alpha <- Pvalues[[M]] < Alpha
+      power <- sum(colSums(pvalue_less_alpha) > 0) / Iter_number
+    }
+    
     Pvalues[[M]] <- power
   }
   
@@ -268,6 +279,10 @@ Pval_method <- function(sampel1,sample2,method) {
     pval <- p_spm(sampel1,sample2)
   } else if (method=="Nonparametric_SPM"){
     pval <- p_snpm(sampel1,sample2)
+  } else if (method=="ERL"){
+    pval <- ERL(sampel1,sample2)
+  } else if (method=="IATSE"){
+    pval <- IATSE(sampel1,sample2)
   } else {
     stop("Choose a method between options")
   }
@@ -310,6 +325,70 @@ p_snpm <- function(data1, data2, B = 1000){
   
 } 
   
+
+ERL <- function(data1,data2) {
+  
+  # t() because in Pvalue_calculator we t(data1) and t(data2)
+  #since the other methods works with t() of data
+  data1= t(data1)
+  data2= t(data2)
+  
+  d <- dim(data1)[1]
+  n_data <-dim(data1)[2]
+  c_s <- create_curve_set(list(r=0:(d-1),obs=cbind(data1,data2)))
+  
+  group <- factor(rep(c(1,2),each=n_data))
+  
+  test <- graph.fanova(
+    
+    nsim = 1000,
+    curve_set = c_s,
+    groups = group,
+    variances = "equal",
+    test.equality = "mean",
+    typeone = "fwer",
+    type = "erl",
+    contrasts =TRUE,
+    alpha = 0.05
+  )
+  
+  test_result <- (test$obs>test$hi) | (test$obs<test$lo) 
+  return(test_result)
+  
+}
+
+
+IATSE <- function(data1,data2) {
+  
+  # t() because in Pvalue_calculator we t(data1) and t(data2)
+  #since the other methods works with t() of data
+  data1= t(data1)
+  data2= t(data2)
+  
+  d <- dim(data1)[1]
+  n_data <-dim(data1)[2]
+  c_s <- create_curve_set(list(r=0:(d-1),obs=cbind(data1,data2)))
+  
+  group <- factor(rep(c(1,2),each=n_data))
+  
+  test <- frank.fanova(
+    
+    nsim = 1000,
+    curve_set = c_s,
+    groups = group,
+    variances = "equal",
+    test.equality = "mean",
+    typeone = "fdr",
+    algorithm = "IATSE",
+    contrasts =TRUE,
+    alpha = 0.05
+  )
+  test_result <- (test$obs>test$hi) | (test$obs<test$lo) 
+  return(test_result)
+  
+}
+
+
 
 
 #######Python noise and pulse##############
