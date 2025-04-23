@@ -1,40 +1,148 @@
+
+/* 
+   Global Styles and Layout Adjustments
+   -------------------------------------
+   This file contains custom CSS to enhance the Shiny app's design.
+*/
+
+/* Ensure full viewport height and set a background color */
+html, body {
+    height: 100%;
+    background-color: #eaf2f8;  /* Light blue background for a clean look */
+}
+
+/* Base font styling for better readability */
+body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.app-title {
+    text-align: center;
+    margin: 20px auto;
+    padding: 15px;
+    color: #eaf2f8;
+    /* Gradient background for a shaded effect */
+    background: linear-gradient(90deg, #d6dbdf 0%, #2c3e50 50%, #d6dbdf 100%);
+    border: 2px solid #154360;
+    border-radius: 15px;
+    /* Adding depth with box-shadow */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /* Enhance text clarity with a subtle text-shadow */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+    /* Smooth transition for hover effects */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* A simple hover effect to make it interactive */
+.app-title:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+}
+
+
+/* Enhance radio buttons text */
 #data_selection_type .radio {
-    font-size: 18px; /* Increase radio button text font size */
+    font-size: 18px;
+    margin-bottom: 10px;
 }
 
+/* Selectize input styling */
 .selectize-input { 
-    font-size: 16px; /* Increase text font size in the input selection options*/
+    font-size: 16px;
+    padding: 5px 10px;
 }
-      
+
+/* Enhanced power output panel styling */
 .power_output {
-    margin-top: 20px; /* Adjust top margin in output of power */
+    margin-top: 20px;
 }
-
 .power_output .well {
-    height: 100px; /* Adjust the height to make it larger */
-    /* width: 100%;  You can also adjust the width if needed */
+    min-height: 120px;
+    background-color: #d4e6f1;
+    border: 1px solid #154360;
+    border-radius: 8px;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
+    padding: 15px;
 }
 
-
+/* Fixed status output with a smooth pulse */
 .status-output {
-  position: fixed;      /* Position the status output fixed */
-  bottom: 20px;        /* Distance from the bottom */
-  right: 20px;         /* Distance from the right */
-  background-color: #c9e3fe; /* Optional: Background color for visibility */
-  padding: 10px;       /* Optional: Padding for spacing */
-  border: 1px solid #80bdff; /* Optional: Border for definition */
-  border-radius: 5px;  /* Optional: Rounded corners */
-  z-index: 1000;       /* Make sure it stays on top */
-    animation: pulse 1.5s infinite; /* Apply pulsing animation */
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #d4e6f1;
+    padding: 10px;
+    border: 1px solid #154360;
+    border-radius: 5px;
+    z-index: 1000;
+    animation: pulse 1.5s infinite;
 }
 
-/* Define the pulse animation */
 @keyframes pulse {
-    0% { transform: scale(1); }          /* Initial size */
-    50% { transform: scale(1.05); }      /* Scale up */
-    100% { transform: scale(1); }         /* Scale back to initial size */
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Enhanced button styling */
+.btn, .btn:focus, .btn:hover, .btn:active {
+    background-color: #d4e6f1;
+    border-color: #154360;
+    color: #1f618d;  /* Text color */
+    border-radius: 4px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+.btn:hover {
+    background-color: #d4e6f1;
+    border-color: #154360;
+}
+
+/* Well panels in tab panels */
+.well {
+    background-color: #ffffff;
+    border: 1px solid #154360;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 6px;
+    padding: 15px;
+}
+
+/* Inputs and numeric fields styling */
+input[type='number'], .form-control {
+    border: 1px solid #154360;
+    border-radius: 4px;
+    padding: 5px 8px;
 }
 
 
+/* Custom section with a white background */
+.plots-section {
+    background-color: #fff !important;  /* Force a white background */
+    padding: 15px;  /* Optional: add some padding */
+    margin-top: 15px;  /* Optional: space above this section */
+    border-radius: 10px;  /* Optional: rounded corners */
+    border: 2px solid #154360;
+    margin: 20px auto;
+}
 
+/* Custom radio box styling Dataset Selection section */
+.custom-radio-box {
+  border: 2px solid #154360;  /* Blue border */
+  padding: 15px;
+  border-radius: 30px;
+  background-color: #d4e6f1;  /* Light background */
+  margin-bottom: 20px;
+}
+
+.draw-plot {
+    border: 2px solid #154360;
+}
+
+/* Custom box styling for the power section */
+.custom-box-power {
+    border: 2px solid #154360;
+    border-radius: 15px;
+    padding: 15px;
+    background-color: #d4e6f1;
+    margin: 20px auto;
+}
 

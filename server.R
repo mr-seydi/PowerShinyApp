@@ -16,6 +16,7 @@ library(future)
 library(promises)
 library(bslib)
 library(dplyr)
+library(readr)
 future::plan(multisession)
 
 
@@ -28,6 +29,10 @@ function(input, output, session) {
   # Reactive value to store the selected type input for baseline type
   type_input_value <- reactiveVal(NULL)
   
+  
+  # Reactive value to store submitted pilot data
+  submitted_pilot_data <- reactiveVal(NULL)
+  
   # Reactive value to store submitted interpolated data
   submitted_data <- reactiveVal(NULL)
   
@@ -36,8 +41,13 @@ function(input, output, session) {
     req(input$data_selection_type)  # Ensure data_selection_type is available before proceeding
     
     ####Data selection####
+    # If "pilot_data" is selected, use pilot data
+    if (input$data_selection_type == "pilot_data") {
+      req(submitted_pilot_data())  # Ensure submitted_pilot_data() is available before proceeding
+      return(submitted_pilot_data())
+    }
     # If 'custom_curve' is selected, use the smoothed curve data from the first app
-    if (input$data_selection_type == "custom_curve") {
+    else if (input$data_selection_type == "custom_curve") {
       req(submitted_data())  # Ensure submitted_data() is available before proceeding
       return(as.vector(submitted_data()))
       
@@ -47,9 +57,9 @@ function(input, output, session) {
       req(input$dataset_two_sample)  # Ensure dataset input is available before proceeding
       
       switch(input$dataset_two_sample,
-             "vGRF_both" = vGRF_data_Phan(type = "both"),
-             "JCF_both" = JCF_data(type = "both"),
-             "Hip_Angle_both" = Angle_data(type = "both"),
+             "vGRF_both" = vGRF_data_Phan(type = "both")[, c(2, 1)],
+             "JCF_both" = JCF_data(type = "both")[, c(2, 1)],
+             "Hip_Angle_both" = Angle_data(type = "both")[, c(2, 1)],
              "Moment_both" = Moment_data(type = "both"),
              "MF_both" = MF_data(type = "both"),
              "EMG_both" = EMG_data(type = "both")
@@ -244,6 +254,164 @@ function(input, output, session) {
   
   ########------End of the Custom Curve------########
   
+  
+  
+  ########------Start Pilot Data------########
+  # Function to detect delimiter
+  detect_delimiter <- function(file_path) {
+    # Read the first line of the file
+    first_line <- readLines(file_path, n = 1)
+    
+    # Check if it has a comma or semicolon
+    if (grepl(";", first_line)) {
+      return(";")
+    } else {
+      return(",")  # Default to comma if no semicolon is found
+    }
+  }
+  
+  # Reactive function to read the data with dynamic delimiter
+  pilot_data <- reactive({
+    req(input$file1)
+    
+    # Detect delimiter
+    delimiter <- detect_delimiter(input$file1$datapath)
+    
+    # Read the data using the detected delimiter and specified header option
+    read_delim(input$file1$datapath,
+               delim = delimiter,
+               escape_double = FALSE,
+               trim_ws = TRUE,
+               col_names = input$header)
+  })
+  
+  # Display the data table
+  output$table <- renderTable({
+    head(pilot_data())
+  })
+  
+  # Dynamically create multi-selectors for Group 1 and Group 2 columns based on uploaded data
+  output$column_selector <- renderUI({
+    req(pilot_data())  # Ensure data is available
+    cols <- names(pilot_data())
+    tagList(
+      selectInput("group1", "Select Group 1 Columns", choices = cols, multiple = TRUE),
+      selectInput("group2", "Select Group 2 Columns", choices = cols, multiple = TRUE)
+    )
+  })
+  
+  
+  
+  ########################estimate fwhm###########################
+  estimate_fwhm <- function(R) {
+    
+    # Sum of squares across rows for each column
+    ssq <- colSums(R^2)
+    
+    # Machine epsilon for numerical stability
+    eps <- .Machine$double.eps
+    
+    n_rows <- nrow(R)
+    n_cols <- ncol(R)
+    
+    # Initialize matrix to store approximated derivatives (gradient) along columns
+    dx <- matrix(NA, nrow = n_rows, ncol = n_cols)
+    
+    # Compute gradient along columns for each row:
+    for (i in 1:n_rows) {
+      # Forward difference for the first column
+      dx[i, 1] <- R[i, 2] - R[i, 1]
+      # Backward difference for the last column
+      dx[i, n_cols] <- R[i, n_cols] - R[i, n_cols - 1]
+      # Central differences for interior columns (if available)
+      if (n_cols > 2) {
+        dx[i, 2:(n_cols - 1)] <- (R[i, 3:n_cols] - R[i, 1:(n_cols - 2)]) / 2
+      }
+    }
+    
+    # Sum the squared gradients across rows for each column
+    v <- colSums(dx^2)
+    
+    # Normalize by the column-wise sum of squares (plus eps for stability)
+    v <- v / (ssq + eps)
+    
+    # Remove any NaN values (in case some columns had zero variance)
+    v <- v[!is.na(v)]
+    
+    # Compute resels per node (using the relation with FWHM)
+    reselsPerNode <- sqrt(v / (4 * log(2)))
+    
+    # The global FWHM estimate is the reciprocal of the average resels per node
+    FWHM <- 1 / mean(reselsPerNode)
+    
+    return(FWHM)
+  }
+  
+  integrated_sd <- function(pointwise_sd) {
+    # Compute the integrated standard deviation
+    return(sqrt(mean(pointwise_sd^2)))
+  }
+  
+  
+  # check if data has any NA or the number of points is 101
+  check_data <- function(y) {
+    if (any(is.na(y))) {
+      warning("Data contains NA values, please complete the data before power analysis.")
+    }
+    if (dim(y)[1] != 101 ){
+      warning("All columns of data domain must have 101 equally spaced observations.")
+    }
+    if (dim(y)[2] == 1 ){
+      warning("You need at least two columns of data to estimate standard deviation.")
+    }
+  }
+  
+  
+  
+  
+  
+  
+  observeEvent(input$submit_data, {
+    req(input$group1, input$group2)  # Ensure groups are selected
+    
+    check_data(pilot_data()[, input$group1])
+    check_data(pilot_data()[, input$group2])
+    
+    
+    # Extract selected columns as matrices
+    group1_data <- as.matrix(pilot_data()[, input$group1])
+    group2_data <- as.matrix(pilot_data()[, input$group2])
+    
+    submitted_pilot_data(cbind(Group1 = rowMeans(group1_data), Group2 = rowMeans(group2_data)))
+    
+    
+    
+    # Compute row-centered matrices
+    r1 <- group1_data - matrix(rowMeans(group1_data), nrow = nrow(group1_data), ncol = ncol(group1_data))
+    r2 <- group2_data - matrix(rowMeans(group2_data), nrow = nrow(group2_data), ncol = ncol(group2_data))
+    
+    
+    output$groups <- renderUI({
+      fwhm_val <- estimate_fwhm(rbind(t(r1), t(r2)))
+      group1_sd <- integrated_sd(apply(r1, 1, sd))
+      group2_sd <- integrated_sd(apply(r2, 1, sd))
+      
+      HTML(paste("Noise FWHM =", round(fwhm_val,2), "<br>",
+                 "Group1 Noise sd =", round(group1_sd,2), "<br>",
+                 "Group2 Noise sd =", round(group2_sd,2)))
+    })
+    
+  })
+  
+  
+  
+
+  ########------End Pilot Data------########
+  
+  
+  
+  
+  
   # Observe changes in dataset input and reset type_input
   observeEvent(input$dataset_baseline, {
     # Reset the type_input_value when dataset changes
@@ -315,7 +483,8 @@ function(input, output, session) {
     } else if (input$data_selection_type == "baseline" || input$data_selection_type == "custom_curve") {
       # Compute the half-range value
       half_range <- ( max(selected_data(), na.rm = T)-
-                      min(selected_data(), na.rm = T)) / 2 
+                      min(selected_data(), na.rm = T)) / 2
+
     } else {
         # Compute the half-range value
         Max1 <- max(selected_data()[,1], na.rm = T)
@@ -324,6 +493,7 @@ function(input, output, session) {
         Min2 <- min(selected_data()[,2], na.rm = T)
         
       half_range <- ( max(c(Max1,Max2), na.rm = T)-min(c(Min1,Min2), na.rm = T) ) / 2
+
     }
 
     # To return the half-range
@@ -371,7 +541,7 @@ function(input, output, session) {
       scale_color_manual(values = colorRampPalette(c("darkblue",
                          "lightblue"))(ncol(smoothed_data())),
                          labels = c(1:ncol(smoothed_data()))) +  # Navy blue shades
-      labs(title = "Smooth Gaussian Noise", x = "Index", y = "Value") +  # Add labels
+      labs(title = "Smooth Gaussian Noise", x = "Domain", y = "Value") +  # Add labels
       theme_minimal() +  # Use a minimal theme
       theme(plot.title = element_text(hjust = 0.5)) +  # Center the plot title
       theme(legend.position = "none")+
@@ -451,16 +621,16 @@ function(input, output, session) {
         x_values = rep(data_pulse()$x_values, 3),  # Repeat x_values for 3 lines
         y_values = c(scaled_pulse(), selected_data(), selected_data() +
                        scaled_pulse()),  # Combine all y-values
-        legend = factor(rep(c("Pulse", "Without pulse", "With pulse"), 
+        legend = factor(rep(c("Signal", "Without signal", "With signal"), 
                             each = length(data_pulse()$x_values)))
       )
       
 
       
       
-      color_values <- c("Pulse" = "black",
-                        "Without pulse" = "cadetblue",
-                        "With pulse" = "tomato")
+      color_values <- c("Signal" = "black",
+                        "Without signal" = "cadetblue",
+                        "With signal" = "tomato")
       
     } else {
       
@@ -471,13 +641,13 @@ function(input, output, session) {
         x_values = rep(0:(cont_size - 1), 3),  # Repeat x_values for 3 lines
         y_values = c((selected_data()[, 1] - selected_data()[, 2]), #first - second column
                      selected_data()[, 1], selected_data()[, 2]),  # Combine all y-values
-        legend = factor(rep(c("Pulse", colnames(selected_data())[1], colnames(selected_data())[2]), 
+        legend = factor(rep(c("Difference", colnames(selected_data())[1], colnames(selected_data())[2]), 
                             each = dim(selected_data())[1]))  # Control factor levels
       )
       
       # Use setNames to create color_values dynamically
       color_values <- setNames(c("black", "cadetblue", "tomato"),
-                               c("Pulse", 
+                               c("Difference", 
                                  colnames(selected_data())[1], 
                                  colnames(selected_data())[2]))
       
@@ -487,7 +657,7 @@ function(input, output, session) {
     # Create the plot using ggplot
     ggplot(plot_data, aes(x = x_values, y = y_values, color = legend)) +
       geom_line(linewidth = 1.5) +  # Plot lines for each group
-      labs(title = "Selected Data", x = "Index", y = "Value") +  # Labels
+      labs(title = "Selected Data", x = "Domain", y = "Value") +  # Labels
       scale_color_manual(values = color_values) +  # Line colors
       theme_minimal() +  # Use a minimal theme
       theme(plot.title = element_text(hjust = 0.5)) +  # Center the title
@@ -513,8 +683,8 @@ function(input, output, session) {
       Sample1 <- data_generator(data = selected_data(), signal = scaled_pulse(), noise = smoothed_data())
       Sample2 <- data_generator(data = selected_data(), noise = smoothed_data_2())
       
-      sample_label_1 <- "With Pulse"
-      sample_label_2 <- "Without Pulse"
+      sample_label_1 <- "With Signal"
+      sample_label_2 <- "Without Signal"
       
       colors_plot_data <- setNames(c("tomato", "cadetblue"),
                                    c( 
@@ -565,7 +735,7 @@ function(input, output, session) {
       # Second layer: Mean lines without group aesthetic
       geom_line(data = mean_data, aes(x = x_values, y = y_values, color = label), linewidth = 2.5) +
       scale_color_manual(values = colors_plot_data) +  # Set colors for both sample labels
-      labs(title = "Generated Sample Data", x = "Index", y = "Value") +  # Add labels
+      labs(title = "Generated Sample Data", x = "Domain", y = "Value") +  # Add labels
       theme_minimal() +  # Use a minimal theme
       theme(plot.title = element_text(hjust = 0.5)) +  # Center the plot title
       theme(legend.position = "bottom")+  # Move legend to bottom
@@ -582,7 +752,7 @@ function(input, output, session) {
   })
   
   
-  iteration_number <- 100
+  #iteration_number <- 100
   
 
 
@@ -646,6 +816,8 @@ function(input, output, session) {
   # Prepare the future parameters outside the future task
   observeEvent(input$calculate, {
     shinyjs::disable("calculate")  # Disable the button during task execution
+    shinyjs::disable("iteration_number")   # Disable the iteration input
+    shinyjs::disable("test_type")          # Disable the test type input
     
     # Prepare the future parameters based on the input values.
     # Future does not support reactive values
@@ -659,6 +831,9 @@ function(input, output, session) {
       noise_fwhm = input$fwhm,
       test_type = input$test_type
     )
+    
+    # Use the user-selected iteration number
+    iteration_number <- input$iteration_number
     
     # Invoke the power calculation task
     power_task$invoke(future_params, iteration_number)
@@ -676,20 +851,22 @@ function(input, output, session) {
     # Get the result from the power task
     task_result <- power_task$result()
 
-    
+    # Retrieve the current iteration number from the input
+    iteration_number <- input$iteration_number
     
     # Calculate the power based on the result
     power_results <- Power_calculator(task_result, iteration_number, Alpha = 0.05)
     
     # Re-enable the button after calculation
     shinyjs::enable("calculate")
-    
+    shinyjs::enable("iteration_number")
+    shinyjs::enable("test_type")
     
     # Create a mapping between method names and display names
     method_names <- c("IWT" = "IWT", 
                       "TWT" = "TWT", 
                       "Parametric_SPM" = "SPM", 
-                      "Nonparametric_SPM" = "SnPM",
+                      "Nonparametric_SPM" = "F-max",
                       "ERL" = "ERL",
                       "IATSE" = "IATSE")
     

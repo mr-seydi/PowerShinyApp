@@ -224,7 +224,7 @@ MF_data <- function(type){
 
 #####EMG####
 
-
+#Bovi, G., Rabuffetti, M., Mazzoleni, P., Ferrarin, M., 2011. A multiple-task gait analysis approach: kinematic, kinetic and emg reference data for healthy young and adult subjects. Gait & Posture 33 (1), 6–13.
 
 #Normalised Electromyography (EMG) For young and adult group (probably Soleus)
 EMG_data <- function(type){

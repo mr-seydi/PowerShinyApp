@@ -32,30 +32,26 @@ ui <- fluidPage(
   useShinyjs(),
   
   includeCSS("www/styles.css"),
-
   
-  # Updated titlePanel with a border and centered title
-  div(class = "app-title",
-      titlePanel("Power ShinyApp")
-  ),
+  
+  titlePanel("Power ShinyApp"),
   
   
   
   # Create a tabset panel to organize different sections
   tabsetPanel(
-    tabPanel(h4("Dataset Selection"),
+    tabPanel("Dataset Selection",
              # Create a fluid row with radioButtons on the left and dataset selection on the right
              fluidRow(
                column(6,
                       # User selects data type (baseline or two-sample)
-                      div(class = "custom-radio-box",
-                          radioButtons("data_selection_type", h3("Choose the data type:"),
-                                       choices = c("Baseline Data" = "baseline", 
-                                                   "Two-Sample Data" = "two_sample",
-                                                   "Custom Curve" = "custom_curve",
-                                                   "Pilot Data" = "pilot_data"),
-                                       selected = "two_sample")
-                      )
+                      radioButtons("data_selection_type", h3("Choose the data type:"),
+                                   choices = c("Baseline Data" = "baseline", 
+                                               "Two-Sample Data" = "two_sample",
+                                               "Custom Curve" = "custom_curve",
+                                               "Pilot Data" = "pilot_data"
+                                   ),
+                                   selected = "baseline")
                ),
                
                column(6,
@@ -81,7 +77,7 @@ ui <- fluidPage(
                       # Conditionally show two-sample data selection inputs
                       conditionalPanel(
                         condition = "input.data_selection_type == 'two_sample'",
-                        selectInput("dataset_two_sample", h4("Choose a dataset with two groups:"),
+                        selectInput("dataset_two_sample", h4("Choose a dataset with two group:"),
                                     choices = c("vGRF (normal and quiet)" = "vGRF_both",
                                                 "JCF (lateral wedge and no wedge)" = "JCF_both",
                                                 "Hip Flexion Angle (two individuals)" = "Hip_Angle_both",
@@ -96,7 +92,7 @@ ui <- fluidPage(
                condition = "input.data_selection_type == 'custom_curve'",
                fluidRow(
                  column(12,
-                        titlePanel("Draw a Curve on the Coordinate Plane"),
+                        titlePanel("Draw a Curve on a Coordinate Plane"),
                         
                         sidebarLayout(
                           sidebarPanel(
@@ -111,10 +107,8 @@ ui <- fluidPage(
                           ),
                           
                           mainPanel(
-                            div(class = "draw-plot",
-                            plotOutput("plot", click = "plot_click")
+                            plotOutput("plot", click = "plot_click"),
                           )
-                        )
                         )
                  )
                )
@@ -143,7 +137,7 @@ ui <- fluidPage(
     ),
     
     
-    tabPanel(h4("Plots"),
+    tabPanel("Plots",
              fluidRow(
                # First row with parameter boxes
                column(6,
@@ -160,7 +154,7 @@ ui <- fluidPage(
                       conditionalPanel(
                         condition = "input.data_selection_type == 'baseline' || input.data_selection_type == 'custom_curve'",
                         wellPanel(
-                          h3("Signal Parameters"),
+                          h3("Pulse Parameters"),
                           numericInput("center", "Center", value = 50, min = 0, max = 100),
                           numericInput("fwhm_pulse", "Full Width at Half Maximum (FWHM):", min = 1, max=100, value = 20),
                           numericInput("amplitude", "Amplitude", value = 300, step = 0.1),
@@ -169,33 +163,35 @@ ui <- fluidPage(
                       )
                )
              ),
-             # Wrap the plot outputs in a div with a white background
-             div(class = "plots-section",
-                 fluidRow(
-                   column(4, plotOutput("noise_plot")),
-                   column(4, plotOutput("pulse_plot")),
-                   column(4, plotOutput("data_plot"))
-                 )
+             fluidRow(
+               # Second row with plots
+               column(4,
+                      plotOutput("noise_plot")
+               ),
+               column(4,
+                      plotOutput("pulse_plot")
+               ),
+               column(4,
+                      plotOutput("data_plot")
+               )
              )
     ),
     
-    tabPanel(h4("Power Calculator"),
+    tabPanel("Power Calculator",
              fluidRow(
                column(4,
-                      div(class = "custom-box-power",
-                          selectInput("test_type", h4("Method:"), 
-                                      choices = c("IWT", "TWT",
-                                                  "SPM" = "Parametric_SPM",
-                                                  "F-max" = "Nonparametric_SPM",
-                                                  "ERL",
-                                                  "IATSE"),
-                                      multiple = TRUE, selected = "TWT"),
+                      selectInput("test_type", h3("Method:"), 
+                                  choices = c("IWT", "TWT",
+                                              "SPM" = "Parametric_SPM",
+                                              "SnPM"="Nonparametric_SPM",
+                                              "ERL",
+                                              "IATSE"),
+                                  multiple = TRUE, selected = "TWT"),
                       # New numeric input for iterations
-                      numericInput("iteration_number", h4("Number of Iterations:"), 
+                      numericInput("iteration_number", "Number of Iterations:", 
                                    value = 100, min = 1),
                       actionButton("calculate", "Calculate Power"),
-                      actionButton("stop", "Stop Calculation")  # Button to stop the calculation
-                      ),
+                      actionButton("stop", "Stop Calculation"),  # Button to stop the calculation
                       # Wrap the status output in a div with a specific class
                       div(
                         strong("Calculation Status: "),
@@ -206,13 +202,13 @@ ui <- fluidPage(
                column(8,
                       # To display the power output
                       div(
-                      # div () to be able to change the style of the output in the CSS file
-                          wellPanel(
-                            htmlOutput("powerOutput")
-                          ),
-                          # named class = "power_output" to be able to change the
-                          # style of the output in the CSS file by calling this class
-                          class = "power_output"
+                        # div () to be able to change the style of the output in the CSS file
+                        wellPanel(
+                          htmlOutput("powerOutput")
+                        ),
+                        # named class = "power_output" to be able to change the
+                        # style of the output in the CSS file by calling this class
+                        class = "power_output"
                       )
                )
                

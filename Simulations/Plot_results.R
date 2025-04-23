@@ -1,4 +1,4 @@
-
+source("Data_functions.R")
 library(ggplot2)
 library(gridExtra)
 library(grid)
@@ -60,11 +60,11 @@ plot_heatmap <- function(data, title_xaxis_yaxis) {
 # Update your data frame with NFWHM as the last column
 Angle_SPM <- data.frame(
   SD = c(15, 10, 5, NA, NA),
-  V1 = c(21, 11, 5, NA, NA),
-  V2 = c(25, 14, 6, NA, NA),
-  V3 = c(29, 15, 6, NA, NA),
-  V4 = c(31, 15, 6, NA, NA),
-  V5 = c(32, 17, 6, NA, NA),
+  V1 = c(23, 12, 5, NA, NA),
+  V2 = c(29, 15, 6, NA, NA),
+  V3 = c(33, 17, 6, NA, NA),
+  V4 = c(36, 18, 7, NA, NA),
+  V5 = c(38, 19, 7, NA, NA),
   NFWHM = c(5, 15, 25, 35,45)  # NFWHM values
 )
 
@@ -73,11 +73,11 @@ Angle_SPM <- data.frame(
 
 Angle_SnPM <- data.frame(
   SD = c(15, 10, 5, NA, NA),
-  V1 = c(21, 11, "<5", NA, NA),  # Replace "<5" with NA for plotting
-  V2 = c(25, 14, 5, NA, NA),
-  V3 = c(28, 14, 6, NA, NA),
-  V4 = c(29, 15, 6, NA, NA),
-  V5 = c(30, 16, 6, NA, NA),
+  V1 = c(22, 12, 5, NA, NA),  # Replace "<5" with NA for plotting
+  V2 = c(28, 14, 6, NA, NA),
+  V3 = c(32, 17, 6, NA, NA),
+  V4 = c(34, 17, 6, NA, NA),
+  V5 = c(36, 17, 6, NA, NA),
   NFWHM = c(5, 15, 25, 35, 45)  # NFWHM values
 )
 
@@ -86,11 +86,11 @@ Angle_SnPM <- data.frame(
 
 Angle_IWT <- data.frame(
   SD = c(15, 10, 5, NA, NA),
-  V1 = c(14, 7, "<5", NA, NA),  # Replace "<5" with NA for plotting
-  V2 = c(20, 10, "<5", NA, NA),
-  V3 = c(23, 11, "<5", NA, NA),
-  V4 = c(25, 12, "<5", NA, NA),
-  V5 = c(26, 13, "<5", NA, NA),
+  V1 = c(15, 8, "<5", NA, NA),  # Replace "<5" with NA for plotting
+  V2 = c(22, 11, "<5", NA, NA),
+  V3 = c(25, 13, "<5", NA, NA),
+  V4 = c(28, 14, "<5", NA, NA),
+  V5 = c(31, 15, 6, NA, NA),
   NFWHM = c(5, 15, 25, 35, 45)  # NFWHM values
 )
 
@@ -99,57 +99,108 @@ Angle_IWT <- data.frame(
 
 Angle_TWT <- data.frame(
   SD = c(15, 10, 5, NA, NA),
-  V1 = c(8, "<5","<5", NA, NA),  # Replace "<5" with NA for plotting
-  V2 = c(13, 6, "<5", NA, NA),
-  V3 = c(17, 8, "<5", NA, NA),
-  V4 = c(19, 9, "<5", NA, NA),
-  V5 = c(21, 10, "<5", NA, NA),
+  V1 = c(9, 5,"<5", NA, NA),  # Replace "<5" with NA for plotting
+  V2 = c(15, 8, "<5", NA, NA),
+  V3 = c(19, 10, "<5", NA, NA),
+  V4 = c(22, 11, "<5", NA, NA),
+  V5 = c(26, 13, "<5", NA, NA),
   NFWHM = c(5, 15, 25, 35, 45)  # NFWHM values
 )
+
+#ERL
+Angle_ERL <- data.frame(
+  SD = c(15, 10, 5, NA, NA),
+  V1 = c(22, 11, 8, NA, NA),
+  V2 = c(28, 14, 6, NA, NA),
+  V3 = c(32, 16, 6, NA, NA),
+  V4 = c(35, 17, 6, NA, NA),
+  V5 = c(37, 17, 6, NA, NA),
+  NFWHM = c(5, 15, 25, 35,45)  # NFWHM values
+)
+
+#IATSE
+
+Angle_IATSE <- data.frame(
+  SD = c(15, 10, 5, NA, NA),
+  V1 = c(23, 12, 5, NA, NA),
+  V2 = c(31, 15, 6, NA, NA),
+  V3 = c(35, 17, 6, NA, NA),
+  V4 = c(38, 18, 6, NA, NA),
+  V5 = c(39, 19, 7, NA, NA),
+  NFWHM = c(5, 15, 25, 35,45)  # NFWHM values
+)
+
+
 
 
 
 
 MF_TWT <- data.frame(
   SD = c(50, 40, 30, NA, NA),
-  V1 = c(13,9,6, NA, NA),  # Replace "<5" with NA for plotting
-  V2 = c(23,15,10, NA, NA),
-  V3 = c(30,20,12, NA, NA),
-  V4 = c(34,22,13, NA, NA),
-  V5 = c(38,24,14, NA, NA),
+  V1 = c(14,10,6, NA, NA),  # Replace "<5" with NA for plotting
+  V2 = c(24,15,10, NA, NA),
+  V3 = c(32,21,12, NA, NA),
+  V4 = c(35,23,12, NA, NA),
+  V5 = c(39,24,15, NA, NA),
   NFWHM = c(5, 15, 25, 35, 45)  # NFWHM values
 )
 
 MF_IWT <- data.frame(
   SD = c(50, 40, 30, NA, NA),
-  V1 = c(22,14,8, NA, NA),  # Replace "<5" with NA for plotting
-  V2 = c(38,25,15, NA, NA),
+  V1 = c(22,15,9, NA, NA),  # Replace "<5" with NA for plotting
+  V2 = c(39,25,16, NA, NA),
   V3 = c(47,30,18, NA, NA),
-  V4 = c(53,34,20, NA, NA),
-  V5 = c(58,37,21, NA, NA),
+  V4 = c(55,35,21, NA, NA),
+  V5 = c(59,39,23, NA, NA),
   NFWHM = c(5, 15, 25, 35, 45)  # NFWHM values
 )
 
 MF_SPM <- data.frame(
   SD = c(50, 40, 30, NA, NA),
   V1 = c(15,11,8, NA, NA),  # Replace "<5" with NA for plotting
-  V2 = c(16,12,8, NA, NA),
-  V3 = c(16,11,8, NA, NA),
-  V4 = c(15,11,7, NA, NA),
-  V5 = c(15,10,7, NA, NA),
+  V2 = c(16,11,8, NA, NA),
+  V3 = c(15,10,7, NA, NA),
+  V4 = c(14,10,7, NA, NA),
+  V5 = c(12,9,6, NA, NA),
   NFWHM = c(5, 15, 25, 35, 45)  # NFWHM values
 )
 
 
 MF_SnPM <- data.frame(
   SD = c(50, 40, 30, NA, NA),
-  V1 = c(15,11,8, NA, NA),  # Replace "<5" with NA for plotting
-  V2 = c(16,12,8, NA, NA),
-  V3 = c(15,11,8, NA, NA),
-  V4 = c(15,11,7, NA, NA),
-  V5 = c(14,10,7, NA, NA),
+  V1 = c(16,11,8, NA, NA),  # Replace "<5" with NA for plotting
+  V2 = c(16,11,8, NA, NA),
+  V3 = c(15,10,7, NA, NA),
+  V4 = c(14,10,7, NA, NA),
+  V5 = c(13,9,7, NA, NA),
   NFWHM = c(5, 15, 25, 35, 45)  # NFWHM values
 )
+
+#ERL
+MF_ERL <- data.frame(
+  SD = c(15, 10, 5, NA, NA),
+  V1 = c(16,11,8, NA, NA),  # Replace "<5" with NA for plotting
+  V2 = c(18,11,9, NA, NA),
+  V3 = c(16,11,8, NA, NA),
+  V4 = c(15,11,8, NA, NA),
+  V5 = c(13,10,7, NA, NA),
+  NFWHM = c(5, 15, 25, 35,45)  # NFWHM values
+)
+
+#IATSE
+
+MF_IATSE <- data.frame(
+  SD = c(15, 10, 5, NA, NA),
+  V1 = c(18,12,9, NA, NA),  # Replace "<5" with NA for plotting
+  V2 = c(21,15,10, NA, NA),
+  V3 = c(20,15,10, NA, NA),
+  V4 = c(20,15,10, NA, NA),
+  V5 = c(20,14,10, NA, NA),
+  NFWHM = c(5, 15, 25, 35,45)  # NFWHM values
+)
+
+
+
 
 # Plot all the datasets using the function
 # Assume plot_heatmap is a custom function for generating heatmaps.
@@ -157,11 +208,17 @@ MF_SnPM <- data.frame(
 plot1 <- plot_heatmap(Angle_SPM, c("", "", "SD"))
 plot2 <- plot_heatmap(Angle_SnPM, c("", "", "SD"))
 plot3 <- plot_heatmap(Angle_IWT, c("", "", "SD"))
-plot4 <- plot_heatmap(Angle_TWT, c("", "NFWHM", "SD"))
-plot5 <- plot_heatmap(MF_SPM, c("", "", "SD"))
-plot6 <- plot_heatmap(MF_SnPM, c("", "", "SD"))
-plot7 <- plot_heatmap(MF_IWT, c("", "", "SD"))
-plot8 <- plot_heatmap(MF_TWT, c("", "NFWHM", "SD"))
+plot4 <- plot_heatmap(Angle_TWT, c("", "", "SD"))
+plot5 <- plot_heatmap(Angle_ERL, c("", "", "SD"))
+plot6 <- plot_heatmap(Angle_IATSE, c("", "NFWHM", "SD"))
+
+
+plot7 <- plot_heatmap(MF_SPM, c("", "", "SD"))
+plot8 <- plot_heatmap(MF_SnPM, c("", "", "SD"))
+plot9 <- plot_heatmap(MF_IWT, c("", "", "SD"))
+plot10 <- plot_heatmap(MF_TWT, c("", "", "SD"))
+plot11 <- plot_heatmap(MF_ERL, c("", "", "SD"))
+plot12 <- plot_heatmap(MF_IATSE, c("", "NFWHM", "SD"))
 
 # Create a title for each column
 col1_title <- textGrob("Hip Felxion Angle", gp=gpar(fontsize=14, fontface="bold"))
@@ -176,23 +233,32 @@ row1_title <- textGrob("SPM", rot=90, gp=gpar(fontsize=12, fontface="bold"))
 row2_title <- textGrob("SnPM", rot=90, gp=gpar(fontsize=12, fontface="bold"))
 row3_title <- textGrob("IWT", rot=90, gp=gpar(fontsize=12, fontface="bold"))
 row4_title <- textGrob("TWT", rot=90, gp=gpar(fontsize=12, fontface="bold"))
+row5_title <- textGrob("ERL", rot=90, gp=gpar(fontsize=12, fontface="bold"))
+row6_title <- textGrob("IATSE", rot=90, gp=gpar(fontsize=12, fontface="bold"))
 
 # Arrange the plots in two columns and four rows
 # Arrange the plots with increased space between columns using a spacer
 # Arrange the plots with row titles and increased space between columns
 grid.arrange(
   spacer, col1_title, spacer, col2_title,          # Column titles and spacer
-  row1_title, plot1, spacer, plot5,                # Row 1 with row title and spacer
-  row2_title, plot2, spacer, plot6,                # Row 2 with row title and spacer
-  row3_title, plot3, spacer, plot7,                # Row 3 with row title and spacer
-  row4_title, plot4, spacer, plot8,                # Row 4 with row title and spacer
+  row1_title, plot1, spacer, plot7,                # Row 1 with row title and spacer
+  row2_title, plot2, spacer, plot8,                # Row 2 with row title and spacer
+  row3_title, plot3, spacer, plot9,                # Row 3 with row title and spacer
+  row4_title, plot4, spacer, plot10,                # Row 4 with row title and spacer
+  row5_title, plot5, spacer, plot11,                # Row 5 with row title and spacer
+  row6_title, plot6, spacer, plot12,                # Row 6 with row title and spacer
   ncol=4,                                          # Four columns (row titles, left plot, spacer, right plot)
-  layout_matrix = rbind(c(1, 2, 3, 4),             # Titles row
+  layout_matrix = rbind(
+                        c(1, 2, 3, 4),             # Titles row
                         c(5, 6, 7, 8),             # First row of plots with row title
                         c(9, 10, 11, 12),          # Second row of plots with row title
                         c(13, 14, 15, 16),         # Third row of plots with row title
-                        c(17, 18, 19, 20)),        # Fourth row of plots with row title
-  heights = c(0.15, 1, 1, 1, 1),                   # Control the height: less space for titles
+                        c(17, 18, 19, 20),         # Fourth row of plots with row title
+                        c(21, 22, 23, 24),        # Fifth row of plots with row title
+                        c(25, 26, 27, 28)         # Sixth row of plots with row title
+  
+                        ),        
+  heights = c(0.15, 1, 1, 1, 1, 1, 1),                   # Control the height: less space for titles
   widths = c(0.1, 1, 0.15, 1)                      # Control the width: space for row titles and columns
 )
 
@@ -204,7 +270,158 @@ Angele <- Angle_data("both")
 #plot these two plot using ggplot2 y axis is value and x is the index and use three colors, two for columns and one for difference between two columns
 # Use the melt function from the reshape2 package to convert the data to long format
 
+####################################
+#SPM
 
+# Update your data frame with NFWHM as the last column
+Angle_SPM <- data.frame(
+  SD = c(15, 10, 5, NA, NA, NA, NA, NA, NA, NA),
+  V1 = c(23, 12, 5, NA, NA, NA, NA, NA, NA, NA),
+  V2 = c(29, 15, 6, NA, NA, NA, NA, NA, NA, NA),
+  V3 = c(33, 17, 6, NA, NA, NA, NA, NA, NA, NA),
+  V4 = c(36, 18, 7, NA, NA, NA, NA, NA, NA, NA),
+  V5 = c(38, 19, 7, NA, NA, NA, NA, NA, NA, NA),
+  V6 = c(38, 19, 7, NA, NA, NA, NA, NA, NA, NA),
+  V7 = c(39, 18, 7, NA, NA, NA, NA, NA, NA, NA),
+  V8 = c(35, 17, 6, NA, NA, NA, NA, NA, NA, NA),
+  V9 = c(33, 16, 6, NA, NA, NA, NA, NA, NA, NA),
+  V10 = c(31, 16, 6, NA, NA, NA, NA, NA, NA, NA),
+  NFWHM = seq(5,95,10)  # NFWHM values
+)
+
+
+
+
+
+
+
+
+Angle_SnPM <- data.frame(
+  SD = c(15, 10, 5, NA, NA, NA, NA, NA, NA, NA),
+  V1 = c(22, 12, 5, NA, NA, NA, NA, NA, NA, NA),  # Replace "<5" with NA for plotting
+  V2 = c(28, 14, 6, NA, NA, NA, NA, NA, NA, NA),
+  V3 = c(32, 17, 6, NA, NA, NA, NA, NA, NA, NA),
+  V4 = c(34, 17, 6, NA, NA, NA, NA, NA, NA, NA),
+  V5 = c(36, 17, 6, NA, NA, NA, NA, NA, NA, NA),
+  V6 = c(35, 17, 6, NA, NA, NA, NA, NA, NA, NA),
+  V7 = c(34, 16, 6, NA, NA, NA, NA, NA, NA, NA),
+  V8 = c(33, 16, 6, NA, NA, NA, NA, NA, NA, NA),
+  V9 = c(32, 16, 6, NA, NA, NA, NA, NA, NA, NA),
+  V10 = c(31, 15, 6, NA, NA, NA, NA, NA, NA, NA),
+  NFWHM = seq(5,95,10)  # NFWHM values
+)
+
+
+
+
+Angle_IWT <- data.frame(
+  SD = c(15, 10, 5, NA, NA, NA, NA, NA, NA, NA),
+  V1 = c(15, 8, "<5", NA, NA, NA, NA, NA, NA, NA),  # Replace "<5" with NA for plotting
+  V2 = c(22, 11, "<5", NA, NA, NA, NA, NA, NA, NA),
+  V3 = c(25, 13, "<5", NA, NA, NA, NA, NA, NA, NA),
+  V4 = c(28, 14, "<5", NA, NA, NA, NA, NA, NA, NA),
+  V5 = c(31, 15, 6, NA, NA, NA, NA, NA, NA, NA),
+  V6 = c(33, 16, 6, NA, NA, NA, NA, NA, NA, NA),
+  V7 = c(35, 17, 6, NA, NA, NA, NA, NA, NA, NA),
+  V8 = c(35, 17, 6, NA, NA, NA, NA, NA, NA, NA),
+  V9 = c(35, 17, 6, NA, NA, NA, NA, NA, NA, NA),
+  V10 = c(35, 17, 6, NA, NA, NA, NA, NA, NA, NA),
+  NFWHM = seq(5,95,10)  # NFWHM values
+)
+
+
+#TWT
+
+Angle_TWT <- data.frame(
+  SD = c(15, 10, 5, NA, NA, NA, NA, NA, NA, NA),
+  V1 = c(9, 5,"<5", NA, NA, NA, NA, NA, NA, NA),  # Replace "<5" with NA for plotting
+  V2 = c(15, 8, "<5", NA, NA, NA, NA, NA, NA, NA),
+  V3 = c(19, 10, "<5", NA, NA, NA, NA, NA, NA, NA),
+  V4 = c(22, 11, "<5", NA, NA, NA, NA, NA, NA, NA),
+  V5 = c(26, 13, "<5", NA, NA, NA, NA, NA, NA, NA),
+  V6 = c(29, 14, 6, NA, NA, NA, NA, NA, NA, NA),
+  V7 = c(31, 15, 6, NA, NA, NA, NA, NA, NA, NA),
+  V8 = c(33, 16, 6, NA, NA, NA, NA, NA, NA, NA),
+  V9 = c(34, 17, 6, NA, NA, NA, NA, NA, NA, NA),
+  V10 = c(34, 17, 6, NA, NA, NA, NA, NA, NA, NA),
+  NFWHM = seq(5,95,10)  # NFWHM values
+)
+
+#ERL
+Angle_ERL <- data.frame(
+  SD = c(15, 10, 5, NA, NA, NA, NA, NA, NA, NA),
+  V1 = c(22, 11, 8, NA, NA, NA, NA, NA, NA, NA),
+  V2 = c(28, 14, 6, NA, NA, NA, NA, NA, NA, NA),
+  V3 = c(32, 16, 6, NA, NA, NA, NA, NA, NA, NA),
+  V4 = c(35, 17, 6, NA, NA, NA, NA, NA, NA, NA),
+  V5 = c(37, 17, 6, NA, NA, NA, NA, NA, NA, NA),
+  V6 = c(36, 17, 6, NA, NA, NA, NA, NA, NA, NA),
+  V7 = c(35, 17, 6, NA, NA, NA, NA, NA, NA, NA),
+  V8 = c(34, 16, 6, NA, NA, NA, NA, NA, NA, NA),
+  V9 = c(33, 16, 6, NA, NA, NA, NA, NA, NA, NA),
+  V10 = c(32, 16, 6, NA, NA, NA, NA, NA, NA, NA),
+  NFWHM = seq(5,95,10)  # NFWHM values
+)
+
+#IATSE
+
+Angle_IATSE <- data.frame(
+  SD = c(15, 10, 5, NA, NA, NA, NA, NA, NA, NA),
+  V1 = c(23, 12, 5, NA, NA, NA, NA, NA, NA, NA),
+  V2 = c(31, 15, 6, NA, NA, NA, NA, NA, NA, NA),
+  V3 = c(35, 17, 6, NA, NA, NA, NA, NA, NA, NA),
+  V4 = c(38, 18, 6, NA, NA, NA, NA, NA, NA, NA),
+  V5 = c(39, 19, 7, NA, NA, NA, NA, NA, NA, NA),
+  V6 = c(40, 20, 7, NA, NA, NA, NA, NA, NA, NA),
+  V7 = c(41, 20, 7, NA, NA, NA, NA, NA, NA, NA),
+  V8 = c(42, 20, 7, NA, NA, NA, NA, NA, NA, NA),
+  V9 = c(42, 20, 7, NA, NA, NA, NA, NA, NA, NA),
+  V10 = c(41, 20, 7, NA, NA, NA, NA, NA, NA, NA),
+  NFWHM = seq(5,95,10)  # NFWHM values
+)
+
+plot1 <- plot_heatmap(Angle_SPM, c("", "", "SD"))
+plot2 <- plot_heatmap(Angle_SnPM, c("", "", "SD"))
+plot3 <- plot_heatmap(Angle_IWT, c("", "", "SD"))
+plot4 <- plot_heatmap(Angle_TWT, c("", "", "SD"))
+plot5 <- plot_heatmap(Angle_ERL, c("", "", "SD"))
+plot6 <- plot_heatmap(Angle_IATSE, c("", "NFWHM", "SD"))
+
+# Create a title for the column
+col_title <- textGrob("Hip Felxion Angle", gp=gpar(fontsize=14, fontface="bold"))
+# Create row names
+row1_title <- textGrob("SPM", rot=90, gp=gpar(fontsize=12, fontface="bold"))
+row2_title <- textGrob("SnPM", rot=90, gp=gpar(fontsize=12, fontface="bold"))
+row3_title <- textGrob("IWT", rot=90, gp=gpar(fontsize=12, fontface="bold"))
+row4_title <- textGrob("TWT", rot=90, gp=gpar(fontsize=12, fontface="bold"))
+row5_title <- textGrob("ERL", rot=90, gp=gpar(fontsize=12, fontface="bold"))
+row6_title <- textGrob("IATSE", rot=90, gp=gpar(fontsize=12, fontface="bold"))
+
+# Arrange the plots in two columns and 6 rows
+grid.arrange(
+  col_title,          # Column title
+  row1_title, plot1,  # Row 1 with row title
+  row2_title, plot2,  # Row 2 with row title
+  row3_title, plot3,  # Row 3 with row title
+  row4_title, plot4,  # Row 4 with row title
+  row5_title, plot5,  # Row 5 with row title
+  row6_title, plot6,  # Row 6 with row title
+  ncol=2,             # Two columns (row titles, plots)
+  layout_matrix = rbind(
+    c(1, 1),           # Column title
+    c(2, 3),           # First row of plots with row title
+    c(4, 5),           # Second row of plots with row title
+    c(6, 7),           # Third row of plots with row title
+    c(8, 9),           # Fourth row of plots with row title
+    c(10, 11),         # Fifth row of plots with row title
+    c(12, 13)          # Sixth row of plots with row title
+  ),
+  heights = c(0.15, 1, 1, 1, 1, 1, 1),  # Control the height: less space for titles
+  widths = c(0.1, 1) 
+)
+
+
+######################################
 Data_plot <- function(dataset,TITLE){
   cont_size <- dim(dataset)[1]
   # Create a data frame with the two-sample data
@@ -245,10 +462,39 @@ Data_plot <- function(dataset,TITLE){
   
 }
 
-
+MF <- MF_data("both")
+Angele <- Angle_data("both")
 
 plot2<- Data_plot(MF, "Muscle Force")
 plot1<- Data_plot(Angele, "Hip Flexion Angle")
 #plot plot1 and 2 in a same row
 grid.arrange(plot1, plot2, ncol=2)
 
+
+
+Angle_IATSE <- data.frame(
+  SD = c(15, 10, 5, NA, NA),
+  V1 = c(22, 12, 5, NA, NA),
+  V2 = c(28, 14, 6, NA, NA),
+  V3 = c(30, 15, 6, NA, NA),
+  V4 = c(32, 16, 6, NA, NA),
+  V5 = c(34, 16, 6, NA, NA),
+  NFWHM = c(5, 15, 25, 35,45)  # NFWHM values
+)
+
+
+Angle_ERL <- data.frame(
+  SD = c(15, 10, 5, NA, NA),
+  V1 = c(20, 10, 8, NA, NA),
+  V2 = c(25, 13, 7, NA, NA),
+  V3 = c(28, 15, 6, NA, NA),
+  V4 = c(29, 15, 7, NA, NA),
+  V5 = c(30, 15, 7, NA, NA),
+  NFWHM = c(5, 15, 25, 35,45)  # NFWHM values
+)
+
+#split screen into two row
+par(mfrow=c(2,1))
+
+plot_heatmap(Angle_ERL,c("ERL","NFWHM","SD"))
+plot_heatmap(Angle_IATSE,c("IATSE","NFWHM","SD"))
