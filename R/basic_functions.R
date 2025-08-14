@@ -1,9 +1,9 @@
 #TWT function
-source("TWT2.R")
+source("R/TWT2.R")
 #SnPM function
-source("Fmax.R")
+source("R/Fmax.R")
 #IWT function
-source("IWT.R")
+source("R/IWT.R")
 
 # #path for vgrf_mean_data
 # path <- "vgrf_fig2.txt"

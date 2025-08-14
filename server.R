@@ -10,7 +10,7 @@
 
 
 
-source("Data_functions.R")
+source("R/Data_functions.R")
 library(ggplot2)
 library(future)
 library(promises)
@@ -776,7 +776,7 @@ function(input, output, session) {
   # Initialize the ExtendedTask for the power calculation
   power_task <- ExtendedTask$new(function(future_params, iteration_number) {
     future_promise({
-      source("Data_functions.R") #source the functions in new session
+      source("R/Data_functions.R") #source the functions in new session
       
       # Initialize method list for power calculation
       method_list <- Initialize_method_list(Methods = future_params$test_type,

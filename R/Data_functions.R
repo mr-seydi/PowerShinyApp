@@ -2,7 +2,7 @@
 # All the data is publicly available on https://github.com/m-a-robinson/sample-size
 
 #If the data was not between [0,100] by linear interpolation transformed 
-source("basic_functions.R")
+source("R/basic_functions.R")
 
 ####vGRF####
 #Robinson, M.A., Vanrenterghem, J. and Pataky, T.C., 2021. Sample size estimation
