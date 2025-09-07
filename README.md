@@ -59,7 +59,7 @@ R -e "shiny::runApp('.', host='127.0.0.1', port=3838)"
 
 * [Introduction to Power ShinyApp](#introduction-to-power-shinyapp)
   * [Dataset Selection](#dataset-selection)
-    * [Available Input Types visual placeholders](#available-input-types-visual-placeholders)
+    * [Available Input Types](#available-input-types)
       * [Baseline Data](#baseline-data)
       * [Two-Sample Data](#two-sample-data)
       * [Custom Curve](#custom-curve)
@@ -70,7 +70,7 @@ R -e "shiny::runApp('.', host='127.0.0.1', port=3838)"
       * [Noise Parameters](#noise-parameters)
       * [Signal Parameters shown only for baseline data or custom curves](#signal-parameters-shown-only-for-baseline-data-or-custom-curves)
     * [Plots Section](#plots-section)
-    * [Visual examples placeholders](#visual-examples-placeholders)
+    * [Visual examples](#visual-examples)
       * [1. Baseline Data](#1-baseline-data)
       * [2. Two-Sample Data](#2-two-sample-data)
       * [3. Custom Curve](#3-custom-curve)
@@ -253,7 +253,7 @@ Choose how you want to create or upload mean functions (curves) for your two-gro
 
 ---
 
-#### Available Input Types (visual placeholders)
+#### Available Input Types
 
 1. **Baseline Data**
 
@@ -351,7 +351,7 @@ Based on the parameters you choose, the app displays three plots side by side to
 - **Data Plot:** shows one illustration of the generated sample functional data.
 
 
-#### Visual examples (placeholders)
+#### Visual examples
 
 **1. Baseline Data**
 
