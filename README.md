@@ -1,9 +1,17 @@
 # Power ShinyApp
 
 The Power ShinyApp is a web-based interactive application developed using R’s Shiny framework.
-The developed app is designed to perform statistical power analysis for Two-Sample/Population Functional Hypothesis Test (Functional/Curve data) using multiple statistical methods.
-The application supports multiple data inputs, interactive visualisation, and statistical power computation to provide a flexible tool for simulation-based power analysis. 
+The developed app is designed to perform statistical power analysis for two-Sample/population local hypothesis test (functional/curve data) using multiple statistical methods.
+The application supports multiple data inputs, interactive visualisation, and statistical power computation to provide a flexible tool for simulation-based power analysis.
 
+
+The current implementation of the Power ShinyApp operates under several key assumptions
+that should be noted. Specifically, the omnibus power has been used as the definition of
+statistical power. The power calculations assume equal group sizes. Furthermore, the
+simulated functional data relies on a stationary noise structure. 
+The application currently restricts the noise component to Gaussian noise only, 
+which is then smoothed using a Gaussian kernel. Users should be aware of these 
+assumptions when interpreting the results of the power analysis.
 
 ---
 
