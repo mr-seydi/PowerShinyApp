@@ -186,7 +186,7 @@ cd PowerShinyApp
 > ├─ R/                 # helper functions
 > ├─ www/               # static assets (css/js/images)
 > ├─ data/              # data files (if any)
-> ├─ renv.lock          # pinned package versions (if using renv)
+> ├─ renv.lock          # pinned package versions
 > └─ README.md
 > ```
 
@@ -202,7 +202,7 @@ setwd("/path/to/PowerShinyApp")
 
 ### Use `renv` (recommended)
 
-If the repo includes an `renv.lock` file, run:
+The repo includes an `renv.lock` file, run:
 
 ```r
 install.packages("renv")
@@ -499,7 +499,7 @@ This project is licensed under the [MIT License](LICENSE) unless otherwise noted
 
 If you use this app in academic work, please cite this paper:
 
-Sample Size Estimation for Functional Data Analysis with Web Application
+Sample size estimation for local hypothesis testing of functional data in medical studies: method comparison, recommendations, and a web application
 
 Mohammad Reza Seydi, Johan Strandberg, Todd C. Pataky, and Lina Schelin
 

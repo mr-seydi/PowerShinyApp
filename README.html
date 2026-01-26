@@ -554,7 +554,7 @@ cd PowerShinyApp</code></pre>
 ├─ R/                 # helper functions
 ├─ www/               # static assets (css/js/images)
 ├─ data/              # data files (if any)
-├─ renv.lock          # pinned package versions (if using renv)
+├─ renv.lock          # pinned package versions
 └─ README.md</code></pre>
 </blockquote>
 <hr />
@@ -568,7 +568,7 @@ repo root:</p>
 <pre class="r"><code>setwd(&quot;/path/to/PowerShinyApp&quot;)</code></pre>
 <div id="use-renv-recommended" class="section level3">
 <h3>Use <code>renv</code> (recommended)</h3>
-<p>If the repo includes an <code>renv.lock</code> file, run:</p>
+<p>The repo includes an <code>renv.lock</code> file, run:</p>
 <pre class="r"><code>install.packages(&quot;renv&quot;)
 renv::restore()  # installs exact package versions from renv.lock</code></pre>
 <hr />
@@ -928,8 +928,9 @@ unless otherwise noted.</p>
 <div id="citation" class="section level2">
 <h2>Citation</h2>
 <p>If you use this app in academic work, please cite this paper:</p>
-<p>Sample Size Estimation for Functional Data Analysis with Web
-Application</p>
+<p>Sample size estimation for local hypothesis testing of functional
+data in medical studies: method comparison, recommendations, and a web
+application</p>
 <p>Mohammad Reza Seydi, Johan Strandberg, Todd C. Pataky, and Lina
 Schelin</p>
 <hr />
