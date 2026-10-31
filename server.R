@@ -11,6 +11,8 @@
 
 
 source("R/Data_functions.R")
+source("R/plot_functions.R")
+source("R/server_helpers.R")
 library(ggplot2)
 library(future)
 library(promises)
@@ -25,6 +27,8 @@ cont_size <- 101 #continuum_size (must match the dimension of baseline data)
 status_file <- "status.txt"
 
 function(input, output, session) {
+
+  # Data selection and dataset type controls ---------------------------------
   
   # Reactive value to store the selected type input for baseline type
   type_input_value <- reactiveVal(NULL)
@@ -40,7 +44,6 @@ function(input, output, session) {
     
     req(input$data_selection_type)  # Ensure data_selection_type is available before proceeding
     
-    ####Data selection####
     # If "pilot_data" is selected, use pilot data
     if (input$data_selection_type == "pilot_data") {
       req(submitted_pilot_data())  # Ensure submitted_pilot_data() is available before proceeding
@@ -52,7 +55,6 @@ function(input, output, session) {
       return(as.vector(submitted_data()))
       
     } else if (input$data_selection_type == "two_sample") { # If 'baseline' is selected, use baseline datasets
-      ######------Data selection, two sample data------####
       # Reactive expression to handle two-sample data selection
       req(input$dataset_two_sample)  # Ensure dataset input is available before proceeding
       
@@ -68,7 +70,6 @@ function(input, output, session) {
   
     } else {
       
-      ######------Data selection, baseline data------####
       req(input$dataset_baseline)  # Ensure dataset input is available before proceeding
       
       # Debugging lines
@@ -119,7 +120,7 @@ function(input, output, session) {
   
   
   
-  ########-------Custom Curve-------########
+  # Custom curve editor ------------------------------------------------------
   # Store additional points clicked by the user
   user_points <- reactiveVal(data.frame(x = numeric(), y = numeric()))
   
@@ -217,15 +218,7 @@ function(input, output, session) {
   output$plot <- renderPlot({
     p <- ggplot(plot_data(), aes(x = x, y = y)) +
       geom_point(color = "blue", size = 3) +
-      xlim(0, 100) + ylim(input$ymin, input$ymax) +
-      labs(x = "X-axis", y = "Y-axis", title = "Click to Draw a Curve") +
-      theme_minimal() +
-      theme(
-        axis.text.x = element_text(size = 12, color = "black"),
-        axis.text.y = element_text(size = 12, color = "black"),
-        axis.title.x = element_text(size = 14),
-        axis.title.y = element_text(size = 14)
-      )
+      xlim(0, 100) + ylim(input$ymin, input$ymax)
     
     # Add connecting lines if there are user points
     if (nrow(plot_data()) > 0) {
@@ -244,7 +237,7 @@ function(input, output, session) {
     }
     
     # Return the plot
-    p
+    style_plot(p, "Click to Draw a Curve", "X-axis", "Y-axis")
   })
   
   
@@ -252,23 +245,9 @@ function(input, output, session) {
   
   
   
-  ########------End of the Custom Curve------########
+  # Pilot data upload and analysis -------------------------------------------
   
   
-  
-  ########------Start Pilot Data------########
-  # Function to detect delimiter
-  detect_delimiter <- function(file_path) {
-    # Read the first line of the file
-    first_line <- readLines(file_path, n = 1)
-    
-    # Check if it has a comma or semicolon
-    if (grepl(";", first_line)) {
-      return(";")
-    } else {
-      return(",")  # Default to comma if no semicolon is found
-    }
-  }
   
   # Reactive function to read the data with dynamic delimiter
   pilot_data <- reactive({
@@ -302,111 +281,23 @@ function(input, output, session) {
   
   
   
-  ########################estimate fwhm###########################
-  estimate_fwhm <- function(R) {
-    
-    # Sum of squares across rows for each column
-    ssq <- colSums(R^2)
-    
-    # Machine epsilon for numerical stability
-    eps <- .Machine$double.eps
-    
-    n_rows <- nrow(R)
-    n_cols <- ncol(R)
-    
-    # Initialize matrix to store approximated derivatives (gradient) along columns
-    dx <- matrix(NA, nrow = n_rows, ncol = n_cols)
-    
-    # Compute gradient along columns for each row:
-    for (i in 1:n_rows) {
-      # Forward difference for the first column
-      dx[i, 1] <- R[i, 2] - R[i, 1]
-      # Backward difference for the last column
-      dx[i, n_cols] <- R[i, n_cols] - R[i, n_cols - 1]
-      # Central differences for interior columns (if available)
-      if (n_cols > 2) {
-        dx[i, 2:(n_cols - 1)] <- (R[i, 3:n_cols] - R[i, 1:(n_cols - 2)]) / 2
-      }
-    }
-    
-    # Sum the squared gradients across rows for each column
-    v <- colSums(dx^2)
-    
-    # Normalize by the column-wise sum of squares (plus eps for stability)
-    v <- v / (ssq + eps)
-    
-    # Remove any NaN values (in case some columns had zero variance)
-    v <- v[!is.na(v)]
-    
-    # Compute resels per node (using the relation with FWHM)
-    reselsPerNode <- sqrt(v / (4 * log(2)))
-    
-    # The global FWHM estimate is the reciprocal of the average resels per node
-    FWHM <- 1 / mean(reselsPerNode)
-    
-    return(FWHM)
-  }
-  
-  integrated_sd <- function(pointwise_sd) {
-    # Compute the integrated standard deviation
-    return(sqrt(mean(pointwise_sd^2)))
-  }
-  
-  
-  # check if data has any NA or the number of points is 101
-  check_data <- function(y) {
-    if (any(is.na(y))) {
-      warning("Data contains NA values, please complete the data before power analysis.")
-    }
-    if (dim(y)[1] != 101 ){
-      warning("All columns of data domain must have 101 equally spaced observations.")
-    }
-    if (dim(y)[2] == 1 ){
-      warning("You need at least two columns of data to estimate standard deviation.")
-    }
-  }
-  
-  
-  
-  
-  
-  
   observeEvent(input$submit_data, {
     req(input$group1, input$group2)  # Ensure groups are selected
-    
-    check_data(pilot_data()[, input$group1])
-    check_data(pilot_data()[, input$group2])
-    
-    
-    # Extract selected columns as matrices
-    group1_data <- as.matrix(pilot_data()[, input$group1])
-    group2_data <- as.matrix(pilot_data()[, input$group2])
-    
-    submitted_pilot_data(cbind(Group1 = rowMeans(group1_data), Group2 = rowMeans(group2_data)))
-    
-    
-    
-    # Compute row-centered matrices
-    r1 <- group1_data - matrix(rowMeans(group1_data), nrow = nrow(group1_data), ncol = ncol(group1_data))
-    r2 <- group2_data - matrix(rowMeans(group2_data), nrow = nrow(group2_data), ncol = ncol(group2_data))
-    
-    
+
+    pilot_groups <- prepare_pilot_groups(pilot_data(), input$group1, input$group2)
+    submitted_pilot_data(pilot_groups$data)
+
     output$groups <- renderUI({
-      fwhm_val <- estimate_fwhm(rbind(t(r1), t(r2)))
-      group1_sd <- integrated_sd(apply(r1, 1, sd))
-      group2_sd <- integrated_sd(apply(r2, 1, sd))
-      
-      HTML(paste("Noise FWHM =", round(fwhm_val,2), "<br>",
-                 "Group1 Noise sd =", round(group1_sd,2), "<br>",
-                 "Group2 Noise sd =", round(group2_sd,2)))
+      HTML(paste("Noise FWHM =", round(pilot_groups$fwhm, 2), "<br>",
+                 "Group1 Noise sd =", round(pilot_groups$group1_sd, 2), "<br>",
+                 "Group2 Noise sd =", round(pilot_groups$group2_sd, 2)))
     })
-    
   })
   
   
   
 
-  ########------End Pilot Data------########
+  # Input synchronization and validation ------------------------------------
   
   
   
@@ -427,14 +318,6 @@ function(input, output, session) {
   
 
   
-  
-  # Helper function for numeric input validation
-  validate_input <- function(input_value, min_value, default_value, error_message) {
-    if (!is.numeric(input_value) || input_value < min_value) {
-      return(list(valid = FALSE, value = default_value, message = error_message))
-    }
-    return(list(valid = TRUE, value = input_value))
-  }
   
   # Input validation observers
   observeEvent(input$sample_size, {
@@ -463,13 +346,12 @@ function(input, output, session) {
   })
   
   
-  # Reactive expressions
+  # Noise generation and plotting --------------------------------------------
   data_noise <- reactive({
     req(input$sample_size)
     noise_guassian_curve(number_of_curves = input$sample_size, continuum_size = cont_size)
   })
   
-  # Reactive expressions
   data_noise_2 <- reactive({
     req(input$sample_size)
     noise_guassian_curve(number_of_curves = input$sample_size, continuum_size = cont_size)
@@ -478,28 +360,7 @@ function(input, output, session) {
   
   # Reactive expression for computing the half-range value for noise SD 
   default_sigma <- reactive({
-    if (is.null(selected_data())) {
-      return(0)  # Return a default value if data is empty
-    } else if (input$data_selection_type == "baseline" || input$data_selection_type == "custom_curve") {
-      # Compute the half-range value
-      half_range <- ( max(selected_data(), na.rm = T)-
-                      min(selected_data(), na.rm = T)) / 2
-
-    } else {
-        # Compute the half-range value
-        Max1 <- max(selected_data()[,1], na.rm = T)
-        Max2 <- max(selected_data()[,2], na.rm = T)
-        Min1 <- min(selected_data()[,1], na.rm = T)
-        Min2 <- min(selected_data()[,2], na.rm = T)
-        
-      half_range <- ( max(c(Max1,Max2), na.rm = T)-min(c(Min1,Min2), na.rm = T) ) / 2
-
-    }
-
-    # To return the half-range
-    
-    return(round( half_range,digits = 1))
-    
+    calculate_default_sigma(selected_data())
   })
   
   # Observe changes to set the default value of noise SD
@@ -536,23 +397,12 @@ function(input, output, session) {
     )
     
     # Generate the plot using ggplot2
-    ggplot(plot_data, aes(x = x_values, y = y_values, group = line_group, color = line_group)) +
+    p <- ggplot(plot_data, aes(x = x_values, y = y_values, group = line_group, color = line_group)) +
       geom_line(linewidth = 1.5) +  # Set line thickness
       scale_color_manual(values = colorRampPalette(c("darkblue",
                          "lightblue"))(ncol(smoothed_data())),
-                         labels = c(1:ncol(smoothed_data()))) +  # Navy blue shades
-      labs(title = "Smooth Gaussian Noise", x = "Domain", y = "Value") +  # Add labels
-      theme_minimal() +  # Use a minimal theme
-      theme(plot.title = element_text(hjust = 0.5)) +  # Center the plot title
-      theme(legend.position = "none")+
-      #increase the font size of the labels and axis numbers
-      theme(axis.text.x = element_text(size = 12),
-            axis.text.y = element_text(size = 12),
-            axis.title.x = element_text(size = 14),
-            axis.title.y = element_text(size = 14),
-            plot.title = element_text(size = 16),
-            #remove legend title
-            legend.title = element_blank())
+                         labels = c(1:ncol(smoothed_data())))  # Navy blue shades
+    style_plot(p, "Smooth Gaussian Noise", "Domain", "Value")
       
       
       
@@ -562,6 +412,7 @@ function(input, output, session) {
   
   
   
+  # Signal pulse generation and plotting ------------------------------------
   # Reactive expression for generating Gaussian pulse data
   data_pulse <- reactive({
     req(input$data_selection_type == "baseline" || input$data_selection_type == "custom_curve")  # Ensure "baseline" is selected
@@ -655,21 +506,10 @@ function(input, output, session) {
     
     
     # Create the plot using ggplot
-    ggplot(plot_data, aes(x = x_values, y = y_values, color = legend)) +
+    p <- ggplot(plot_data, aes(x = x_values, y = y_values, color = legend)) +
       geom_line(linewidth = 1.5) +  # Plot lines for each group
-      labs(title = "Selected Data", x = "Domain", y = "Value") +  # Labels
-      scale_color_manual(values = color_values) +  # Line colors
-      theme_minimal() +  # Use a minimal theme
-      theme(plot.title = element_text(hjust = 0.5)) +  # Center the title
-      theme(legend.position = "bottom")+
-      #increase the font size of the labels and axis numbers
-      theme(axis.text.x = element_text(size = 12),
-            axis.text.y = element_text(size = 12),
-            axis.title.x = element_text(size = 14),
-            axis.title.y = element_text(size = 14),
-            plot.title = element_text(size = 16),
-            legend.text = element_text(size = 12),
-            legend.title = element_blank())
+      scale_color_manual(values = color_values)  # Line colors
+    style_plot(p, "Selected Data", "Domain", "Value", "bottom")
   })
   
   
@@ -729,25 +569,13 @@ function(input, output, session) {
     )
     
     # Create the plot using ggplot2
-    ggplot() +
+    p <- ggplot() +
       # First layer: Individual lines
       geom_line(data = plot_data, aes(x = x_values, y = y_values, group = interaction(line_group, label), color = label), linewidth = 1, alpha = 0.4) +
       # Second layer: Mean lines without group aesthetic
       geom_line(data = mean_data, aes(x = x_values, y = y_values, color = label), linewidth = 2.5) +
-      scale_color_manual(values = colors_plot_data) +  # Set colors for both sample labels
-      labs(title = "Generated Sample Data", x = "Domain", y = "Value") +  # Add labels
-      theme_minimal() +  # Use a minimal theme
-      theme(plot.title = element_text(hjust = 0.5)) +  # Center the plot title
-      theme(legend.position = "bottom")+  # Move legend to bottom
-      #increase the font size of the labels and axis numbers
-      theme(axis.text.x = element_text(size = 12),
-            axis.text.y = element_text(size = 12),
-            axis.title.x = element_text(size = 14),
-            axis.title.y = element_text(size = 14),
-            plot.title = element_text(size = 16),
-            #increase legends font and element size
-            legend.text = element_text(size = 12),
-            legend.title = element_blank())
+      scale_color_manual(values = colors_plot_data)  # Set colors for both sample labels
+    style_plot(p, "Generated Sample Data", "Domain", "Value", "bottom")
     
   })
   
@@ -757,6 +585,7 @@ function(input, output, session) {
 
 
   
+  # Power calculation task and result reporting ------------------------------
   # Delete file at end of session
   onStop(function(){
     print(status_file)
@@ -904,4 +733,3 @@ function(input, output, session) {
   
   
 }
-  
